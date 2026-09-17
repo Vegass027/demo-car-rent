@@ -32,4 +32,6 @@ dist-ssr
 .kilocode/
 
 # Database dumps (may contain sensitive data)
-database/
+database/*
+!database/schema_dump.sql
+!database/README.md
