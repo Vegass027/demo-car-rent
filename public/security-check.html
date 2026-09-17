@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Security Check</title>
+<style>
+  body { font-family: system-ui; max-width: 600px; margin: 40px auto; padding: 0 20px; background: #f5f5f5; }
+  h2 { margin-bottom: 16px; }
+  input { width: 100%; padding: 8px 10px; margin-bottom: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; box-sizing: border-box; }
+  button { width: 100%; padding: 10px; background: #111; color: #fff; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; margin-bottom: 16px; }
+  button:disabled { opacity: 0.5; }
+  .row { display: flex; gap: 10px; padding: 10px 12px; border-radius: 8px; margin-bottom: 6px; background: #fff; border-left: 4px solid #ccc; }
+  .ok { border-left-color: #1D9E75; }
+  .fail { border-left-color: #E24B4A; }
+  .warn { border-left-color: #EF9F27; }
+  .label { font-size: 13px; font-weight: 600; }
+  .detail { font-size: 12px; color: #666; margin-top: 2px; }
+  #status { font-size: 12px; color: #888; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<h2>🔐 Проверка безопасности</h2>
+<p style="font-size:13px;color:#666;margin-bottom:12px">
+  Открой этот файл в том же браузере где работает твоё приложение на localhost:5173
+</p>
+
+<input id="url" placeholder="https://xxx.supabase.co" />
+<input id="key" placeholder="anon key (eyJ...)" />
+<button id="btn" onclick="run()">Запустить проверку</button>
+<div id="status"></div>
+<div id="out"></div>
+
+<script>
+async function run() {
+  const btn = document.getElementById('btn');
+  btn.disabled = true;
+  btn.textContent = 'Проверяю...';
+
+  const url = document.getElementById('url').value.trim().replace(/\/$/, '');
+  const key = document.getElementById('key').value.trim();
+  const out = document.getElementById('out');
+  const status = document.getElementById('status');
+  out.innerHTML = '';
+
+  function row(ok, label, detail) {
+    const cls = ok === true ? 'ok' : ok === false ? 'fail' : 'warn';
+    const icon = ok === true ? '✅' : ok === false ? '❌' : '⚠️';
+    out.innerHTML += `<div class="row ${cls}">
+      <span style="font-size:18px">${icon}</span>
+      <div><div class="label">${label}</div><div class="detail">${detail}</div></div>
+    </div>`;
+  }
+
+  // Читаем localStorage приложения (работает только если открыт на том же домене)
+  // Поэтому открывай этот файл через localhost:5173/security-check.html
+  // ИЛИ скрипт сам читает из текущего localStorage
+
+  status.textContent = 'Проверяю localStorage...';
+
+  const token = localStorage.getItem('session_token');
+  row(!!token, 'JWT токен в localStorage', token ? token.slice(0,30) + '...' : 'session_token не найден — сначала залогинься в приложении');
+
+  if (token) {
+    const parts = token.split('.');
+    row(parts.length === 3, 'Формат JWT', parts.length === 3 ? 'header.payload.signature ✓' : 'Неверный формат');
+
+    try {
+      const p = JSON.parse(atob(parts[1]));
+      const now = Math.floor(Date.now() / 1000);
+      const left = p.exp - now;
+      row(left > 0, 'Токен не просрочен', left > 0
+        ? `Истекает через ${Math.round(left / 60)} мин (${new Date(p.exp * 1000).toLocaleTimeString()})`
+        : `Просрочен ${Math.abs(Math.round(left / 60))} мин назад — перелогинься`);
+      row(!!(p.role && p.user_id), 'Клеймы role и user_id в JWT',
+        p.role && p.user_id
+          ? `role: "${p.role}" | user_id: ${String(p.user_id).slice(0, 8)}...`
+          : `Отсутствуют: role=${p.role}, user_id=${p.user_id}`);
+    } catch (e) {
+      row(false, 'Декодирование токена', 'Ошибка: ' + e.message);
+    }
+  }
+
+  const suspicious = Object.keys(localStorage).filter(k => {
+    const v = localStorage.getItem(k) || '';
+    return v.length > 200 && v.startsWith('eyJ') && v !== token;
+  });
+  row(suspicious.length === 0, 'Service role key не утёк',
+    suspicious.length === 0 ? 'Не обнаружен в localStorage' : '⚠ Подозрительные ключи: ' + suspicious.join(', '));
+
+  if (!url || !key) {
+    row(null, 'Проверка API пропущена', 'Введи SUPABASE_URL и ANON KEY выше');
+    btn.disabled = false;
+    btn.textContent = 'Запустить снова';
+    status.textContent = '';
+    return;
+  }
+
+  const tables = [
+    ['car_records', 'car_records доступна без JWT?'],
+    ['cars', 'cars доступна без JWT?'],
+    ['cash_flow', 'cash_flow доступна без JWT?'],
+    ['monthly_stats', 'monthly_stats доступна без JWT?'],
+  ];
+
+  for (const [table, label] of tables) {
+    status.textContent = `Проверяю ${table}...`;
+    try {
+      const res = await fetch(`${url}/rest/v1/${table}?select=*&limit=1`, {
+        headers: { 'apikey': key }
+      });
+      const protected_ = res.status === 401 || res.status === 403;
+      row(protected_, label, `Статус без токена: ${res.status} — ${protected_ ? 'ЗАЩИЩЕНО ✓' : 'ОТКРЫТО! Добавь RLS'}`);
+    } catch (e) {
+      row(null, label, 'Ошибка: ' + e.message);
+    }
+  }
+
+  status.textContent = 'Готово.';
+  btn.disabled = false;
+  btn.textContent = 'Запустить снова';
+}
+</script>
+</body>
+</html>
