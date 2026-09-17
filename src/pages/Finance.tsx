@@ -128,10 +128,6 @@ export function Finance() {
       {viewMode === 'analytics' && (
         <AnalyticsView />
       )}
-
-      {viewMode === 'requisites' && (
-        <AccountingView />
-      )}
     </PageContainer>
   )
 }
