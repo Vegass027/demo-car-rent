@@ -22,6 +22,13 @@ import { useSaveClientFromContract } from '@/hooks/useClients'
 import { formatMoney } from '@/utils/format'
 import { calcProfit } from '@/utils/calc'
 import { generateContractDocument, generateServiceActDocument, generateBuyoutContractDocument, generateSimpleRentalContractDocument, generateContractNumber } from '@/utils/contractGenerator'
+import { generateContractDocumentHTML, generateServiceActDocumentHTML, generateBuyoutContractDocumentHTML, generateSimpleRentalContractDocumentHTML, openHtmlDocument } from '@/utils/contractGeneratorHTML'
+
+// Определение мобильного устройства — на мобильных открываем HTML (DOCX криво рендерится в Safari)
+function isMobileDevice(): boolean {
+  if (typeof window === 'undefined') return false
+  return window.innerWidth < 768 || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+}
 import { clientToContractData } from '@/api/clients'
 import { ClientSearch } from '@/components/features/ClientSearch'
 import type { CarRecord, RecordFormData, Car, ContractClientData, Client, RelativeContact } from '@/types'
@@ -391,8 +398,8 @@ export function RecordModal({
     setIsGeneratingContract(true)
     try {
       const renterName = watch('renterName') || ''
-      
-      await generateContractDocument({
+
+      const data = {
         // Данные авто
         carBrand: selectedCar.brand || '',
         carModel: selectedCar.model || '',
@@ -401,13 +408,13 @@ export function RecordModal({
         carLicensePlate: selectedCar.licensePlate,
         carVin: selectedCar.vin || '',
         carPrice: selectedCar.purchasePrice || 0,
-        
+
         // Данные клиента (АРЕНДАТОР - берёт в аренду)
         client: {
           ...contractClient,
           fullName: contractClient.fullName || renterName,
         },
-        
+
         // Данные аренды
         contractNumber: generateContractNumber(),
         contractDate: new Date().toISOString().split('T')[0],
@@ -416,7 +423,7 @@ export function RecordModal({
         dailyPrice: dailyPrice,
         totalAmount: totalAmount,
         deposit: depositAmount,
-        
+
         // Данные владельца (АРЕНДОДАТЕЛЬ - сдаёт в аренду)
         owner: {
           fullName: companySettings.ownerFullName || '',
@@ -428,7 +435,16 @@ export function RecordModal({
           registrationAddress: companySettings.ownerRegistrationAddress || '',
           phone: companySettings.ownerPhone || '',
         },
-      })
+      }
+
+      // На мобильном открываем HTML в браузере (DOCX криво рендерится в Safari)
+      // На десктопе сохраняем DOCX (редактируемый формат)
+      if (isMobileDevice()) {
+        const html = generateContractDocumentHTML(data)
+        openHtmlDocument(html)
+      } else {
+        await generateContractDocument(data)
+      }
     } catch (error) {
       console.error('Ошибка генерации акта:', error)
       alert('Ошибка при генерации акта')
@@ -459,39 +475,47 @@ export function RecordModal({
     setIsGeneratingServiceAct(true)
     try {
       const renterName = watch('renterName') || ''
-      
-      await generateServiceActDocument({
+
+      const data = {
         // Номер акта (используем тот же генератор что для договоров)
         actNumber: generateContractNumber().replace('ККР-', 'А-'),
         actDate: new Date().toISOString().split('T')[0],
-        
+
         // Данные договора
         contractNumber: generateContractNumber(),
         contractDate: new Date().toISOString().split('T')[0],
-        
+
         // Исполнитель (владелец)
         executor: {
           fullName: companySettings.ownerFullName || '',
           phone: companySettings.ownerPhone || '',
         },
-        
+
         // Заказчик (клиент)
         customer: {
           fullName: contractClient.fullName || renterName,
           phone: contractClient.phone,
         },
-        
+
         // Данные аренды
         startDate: startDate || new Date().toISOString().split('T')[0],
         endDate: endDate || new Date().toISOString().split('T')[0],
         dailyPrice: dailyPrice,
         totalAmount: totalAmount,
         rentalDays: daysCount,
-        
+
         // Данные авто
         carName: selectedCar.name,
         carLicensePlate: selectedCar.licensePlate,
-      })
+      }
+
+      // На мобильном открываем HTML, на десктопе — DOCX
+      if (isMobileDevice()) {
+        const html = generateServiceActDocumentHTML(data)
+        openHtmlDocument(html)
+      } else {
+        await generateServiceActDocument(data)
+      }
     } catch (error) {
       console.error('Ошибка генерации акта:', error)
       alert('Ошибка при генерации акта')
@@ -521,7 +545,7 @@ export function RecordModal({
     try {
       const effectiveDate = buyoutStartDate || new Date().toISOString().split('T')[0]
 
-      await generateBuyoutContractDocument({
+      const data = {
         carBrand: selectedCar.brand || '',
         carModel: selectedCar.model || '',
         carYear: selectedCar.year,
@@ -567,7 +591,15 @@ export function RecordModal({
         carStsDate: buyoutStsDate,
 
         relatives: buyoutRelatives,
-      })
+      }
+
+      // На мобильном открываем HTML, на десктопе — DOCX
+      if (isMobileDevice()) {
+        const html = generateBuyoutContractDocumentHTML(data)
+        openHtmlDocument(html)
+      } else {
+        await generateBuyoutContractDocument(data)
+      }
     } catch (error) {
       console.error('Ошибка генерации договора выкупа:', error)
       alert('Ошибка при генерации договора выкупа')
@@ -597,7 +629,7 @@ export function RecordModal({
     
     setIsGeneratingSimpleRental(true)
     try {
-      await generateSimpleRentalContractDocument({
+      const data = {
         // Данные авто
         carBrand: selectedCar.brand || '',
         carModel: selectedCar.model || '',
@@ -608,10 +640,10 @@ export function RecordModal({
         carStsSeries: buyoutStsSeries || '',
         carStsNumber: buyoutStsNumber || '',
         carStsDate: buyoutStsDate || '',
-        
+
         // Данные клиента
         client: contractClient,
-        
+
         // Данные аренды
         contractNumber: generateContractNumber(),
         contractDate: new Date().toISOString().split('T')[0],
@@ -622,7 +654,7 @@ export function RecordModal({
         dailyPrice: dailyPrice,
         deposit: depositAmount,
         deliveryAddress: buyoutDeliveryAddress || '',
-        
+
         // Данные владельца
         owner: {
           fullName: companySettings.ownerFullName || '',
@@ -634,7 +666,15 @@ export function RecordModal({
           registrationAddress: companySettings.ownerRegistrationAddress || '',
           phone: companySettings.ownerPhone || '',
         },
-      })
+      }
+
+      // На мобильном открываем HTML, на десктопе — DOCX
+      if (isMobileDevice()) {
+        const html = generateSimpleRentalContractDocumentHTML(data)
+        openHtmlDocument(html)
+      } else {
+        await generateSimpleRentalContractDocument(data)
+      }
     } catch (error) {
       console.error('Ошибка генерации договора аренды:', error)
       alert('Ошибка при генерации договора')
