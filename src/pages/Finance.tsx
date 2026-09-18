@@ -2343,7 +2343,7 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
       }
 
       if (isMobileDevice()) {
-        openHtmlDocument(generateContractDocumentHTML(data))
+        openHtmlDocument(await generateContractDocumentHTML(data))
       } else {
         await generateContractDocument(data)
       }

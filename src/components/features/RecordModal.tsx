@@ -442,7 +442,7 @@ export function RecordModal({
       console.log('[RecordModal] handleGenerateContract, isMobile:', isMobileDevice())
       if (isMobileDevice()) {
         try {
-          const html = generateContractDocumentHTML(data)
+          const html = await generateContractDocumentHTML(data)
           console.log('[RecordModal] HTML generated, length:', html.length)
           openHtmlDocument(html)
           console.log('[RecordModal] openHtmlDocument called')
@@ -603,7 +603,7 @@ export function RecordModal({
 
       // На мобильном открываем HTML, на десктопе — DOCX
       if (isMobileDevice()) {
-        const html = generateBuyoutContractDocumentHTML(data)
+        const html = await generateBuyoutContractDocumentHTML(data)
         openHtmlDocument(html)
       } else {
         await generateBuyoutContractDocument(data)

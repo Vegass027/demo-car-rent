@@ -576,7 +576,7 @@ export function CarDetail() {
       const days = record.startDate && record.endDate
         ? Math.ceil((new Date(record.endDate).getTime() - new Date(record.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
         : 1
-      const html = generateContractDocumentHTML({
+      const html = await generateContractDocumentHTML({
         carBrand: car.brand || '',
         carModel: car.model || '',
         carYear: car.year,

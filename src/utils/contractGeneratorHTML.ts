@@ -47,6 +47,24 @@ function fmtMoney(n: number | undefined): string {
   return n.toLocaleString('ru-RU')
 }
 
+async function loadCarSchemaAsBase64(): Promise<string | null> {
+  try {
+    const response = await fetch('/shema-avto.png')
+    if (!response.ok) return null
+    const buffer = await response.arrayBuffer()
+    // Конвертируем ArrayBuffer в base64 без spread (чтобы не уронить большие буферы)
+    const bytes = new Uint8Array(buffer)
+    let binary = ''
+    const chunkSize = 8192
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunkSize)))
+    }
+    return typeof btoa !== 'undefined' ? btoa(binary) : Buffer.from(bytes).toString('base64')
+  } catch {
+    return null
+  }
+}
+
 
 
 // ============================================================
@@ -148,27 +166,37 @@ ${body}
 }
 
 // Вспомогательная: открыть HTML в новой вкладке (Safari iOS / Android / Desktop)
-// Используем <a target="_blank"> вместо window.open — обходит popup blocker на iOS
+// Используем about:blank + document.write, чтобы URL в адресной строке был чистый,
+// а при печати в шапке страницы не отображался blob:https://...
 export function openHtmlDocument(html: string): void {
-  const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.target = '_blank'
-  a.rel = 'noopener noreferrer'
-  // Симулируем клик — обязательно в том же event loop, иначе iOS блокирует
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  // Освобождаем URL через минуту
-  setTimeout(() => URL.revokeObjectURL(url), 60_000)
+  // about:blank — same-origin пустая страница. Popup blocker не срабатывает,
+  // потому что это безопасный URL, открытый синхронно в обработчике клика.
+  const win = window.open('about:blank', '_blank')
+  if (!win) {
+    // Fallback: если popup заблокирован (например, iOS Safari без user gesture),
+    // используем blob URL — как раньше
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.target = '_blank'
+    a.rel = 'noopener noreferrer'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    setTimeout(() => URL.revokeObjectURL(url), 60_000)
+    return
+  }
+  win.document.open()
+  win.document.write(html)
+  win.document.close()
 }
 
 // ============================================================
 // 1. АКТ ПРИЁМА-ПЕРЕДАЧИ ТРАНСПОРТНОГО СРЕДСТВА
 // ============================================================
 
-export function generateContractDocumentHTML(data: any): string {
+export async function generateContractDocumentHTML(data: any): Promise<string> {
   const owner = data.owner
   const c = data.client
 
@@ -180,6 +208,12 @@ export function generateContractDocumentHTML(data: any): string {
   const deliveryPlace = data.deliveryPlace || '___________________________________________'
   const returnPlace = data.returnPlace || '___________________________________________'
   const carPrice = data.carPrice || 0
+
+  // Загружаем схему автомобиля для встраивания
+  const schemaBase64 = await loadCarSchemaAsBase64()
+  const schemaImg = schemaBase64
+    ? `<p class="center"><img src="data:image/png;base64,${schemaBase64}" style="max-width:500px; width:100%; height:auto;" alt="Схема автомобиля" /></p>`
+    : `<p class="center"><i>[Схема автомобиля]</i></p>`
 
   const body = `
 <p class="center">Приложение №1 к договору № ${esc(data.contractNumber)} от ${esc(fmtDateLong(data.contractDate))}</p>
@@ -216,7 +250,7 @@ export function generateContractDocumentHTML(data: any): string {
 <p>Стоимость транспортного средства: ${fmtMoney(carPrice)} рублей</p>
 
 <p><b>3. На момент передачи транспортное средство имеет следующие повреждения кузова:</b></p>
-<p class="center"><i>[Схема автомобиля]</i></p>
+${schemaImg}
 
 <p><b>Примечания:</b></p>
 ${Array(10).fill('<p>____________________________________________________________</p>').join('\n')}
@@ -424,7 +458,7 @@ export function generateSimpleRentalContractDocumentHTML(
 <p>4.2.13. Оплатить штраф(ы), полученный(ые) по его вине, в том числе вынесенный(ые) с помощью автоматических средств фото-видео фиксации, передав необходимую сумму денег Арендодателю не позднее 7 дней после фактического получения штрафа(ов).</p>
 <p>4.2.16. По окончании периода использования Автомобиля вернуть его на то же место указанное пункте 1.4, откуда он его взял в начале использования, в противном случае оплатить Арендодателю все расходы по возврату автомобиля в исходное место и 10000 рублей, как компенсацию за потерю времени.</p>
 <p>4.2.17. Не курить в салоне Автомобиля, и исключить случаи курения пассажирами в данном Автомобиле. В случае обнаружения Арендодателем последствий курения в салоне, оплатить штраф в размере 10000 рублей.</p>
-<p>4.2.18. Вернуть автомобиль Арендодателю в чистом виде (проведя комплексную мойку на специализированной моечной станции) если автомобиль был передан Арендатору в чистом виде. Если автомобиль был передан Арендатору в нечистом виде, то Арендатор может не выполнять данный пункт.</p>
+<p>4.2.18. Вернуть автомобиль Арендодателю в чистом виде (проведя комплексную мойку на специализированной моечной станции) если автомобиль был передан Арендатору в чистом виде. Если автомобиль был передан Арендатору в не чистом виде, то Арендатор может не выполнять данный пункт.</p>
 <p>4.2.19. Устранить за свой счет любые повреждения в том числе произошедшие при ДТП, которые произошли по его вине или при отсутствии вины в результате действий третьих лиц (кроме случаев если личность третьих лиц известна и вина третьих лиц доказана соответствующим документом), не позднее 14 дней с момента ДТП, либо передав сумму денег на восстановление Автомобиля Арендодателю, по оценочной стоимости повреждений в организации, осуществляющей данные услуги.</p>
 <p>4.2.20. Передать копию своего паспорта и водительского удостоверения Арендодателю, либо отправить по электронной почте сканы документов.</p>
 <p>4.2.22. Ознакомиться с правилами эксплуатации автомобиля.</p>
@@ -473,6 +507,77 @@ export function generateSimpleRentalContractDocumentHTML(
 <p class="center"><b>Арендодатель:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Арендатор:</b></p>
 <p class="center">___________________/_____________________/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;___________________/____________________________/</p>
 <p class="center" style="font-size: 9pt;">(подпись)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(фамилия, инициалы)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(подпись)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(фамилия, инициалы)</p>
+
+<div class="page-break"></div>
+
+<p class="center bold" style="font-size:13pt;">Приложение № 1 к ДОГОВОРУ АРЕНДЫ</p>
+<p class="center bold" style="font-size:13pt;">транспортного средства без экипажа</p>
+<p class="center bold">от «${startDay}» ${startMonthLong} ${startYear}г.</p>
+
+<p class="center bold" style="font-size:14pt; margin-top:20px;">Дополнительное соглашение</p>
+<p>г. ${esc(data.contractCity || '____________')}</p>
+
+<p><b>1.</b> Арендная плата за пользование Автомобилем по настоящему Договору составляет ${data.dailyPrice ? data.dailyPrice.toLocaleString('ru-RU') : '____________'} рублей в день.</p>
+
+<p><b>2.</b> В день заключения договора с момента Арендатор оплачивает <span class="bold">обеспечительный платеж</span> в ${data.deposit > 0 ? data.deposit.toLocaleString('ru-RU') : '____________'} размере руб.</p>
+
+<p><b>3.</b> В случае повреждения автомобиля, в результате ДТП по вине Арендатора, когда автомобиль временно не может использоваться по назначению, на период его ремонта, Арендатор также выплачивает Арендодателю сумму арендных платежей каждый день, указанную в дополнительном соглашении, пункт 1., до тех пор, пока автомобиль полностью будет восстановлен в прежнее состояние.</p>
+
+<p><b>4.</b> Арендная плата за пользование автомобилем выплачивается вовремя каждый день, или по предоплате. Просрочка оплаты арендных платежей – штраф 5000 рублей/день.</p>
+
+<p><b>5.</b> Если Арендатор намерен завершить пользование арендным автомобилем, он должен поставить в известность.</p>
+
+<p><b>9</b> При возникновении задолженности в сумме более 5000 (пяти тысяч) рублей, денежные средства, внесенные Арендатором не будут учитываются в выкупную стоимость, пока долг не будет погашен. Эти денежные средства будут учитываться как арендные платежи, при наличии задолженности Арендатора перед Арендодателем.</p>
+
+<p><b>10.</b> Арендатор обязан иметь приложение «Whatsapp», вовремя отвечать на сообщения, всегда быть на связи.</p>
+<p><b>11.</b> Арендатор обязан машину содержать в чистом виде. В машине не кушать. В машине не курить. Грязная машина - штраф 5000 рублей.</p>
+<p><b>12.</b> Арендатор обязан ставить в известность, при поездке за город. В случае не извещения штраф в размере 10000 (десять тысяч) рублей, и 10000 (десять тысяч) рублей за каждый день нахождения автомобиля за городом.</p>
+<p><b>13.</b> Арендатор обязан не ставить автомобиль на зеленую зону. Штраф 5000.</p>
+<p><b>14.</b> Арендатор обязан не превышать скоростной режим и ездить по правилам ПДД.</p>
+<p><b>15.</b> Если на машине стоит Газ, то Арендатор обязан поддерживать уровень бензина в баке не меньше четверти. Штраф 500.</p>
+<p><b>16.</b> Арендатор обязан не давать право управления транспортным средством третьим лицам.</p>
+<p><b>17.</b> Штрафы оплачиваются в первую очередь с арендных платежей.</p>
+<p><b>18.</b> Во время прохождения ТО автомобиля, независимо от времени, проведенным в сервисе, никаких скидок по арендной плате не предоставляется.</p>
+<p><b>19.</b> Суточный пробег транспортного средства не должен превышать 400 километров в сутки.</p>
+<p><b>20.</b> Настоящее дополнительное соглашение вступает в силу с момента его подписания.</p>
+<p><b>21.</b> Настоящее соглашение составлено в 2-х (двух) экземплярах, имеющих равную юридическую силу.</p>
+<p><b>22.</b> За личные вещи, оставленные в автомобиле, Арендодатель ответственности не несет.</p>
+
+<p class="bold">Арендодатель: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Арендатор:</p>
+<p class="center">___________________/_____________________/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ___________________/_____________________/</p>
+<p class="center" style="font-size:9pt;">(подпись) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (фамилия, инициалы) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (подпись) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (фамилия, инициалы)</p>
+
+<div class="page-break"></div>
+
+<p class="center bold" style="font-size:13pt;">Приложение № 2</p>
+<p class="center bold" style="font-size:13pt;">к ДОГОВОРУ АРЕНДЫ</p>
+<p class="center bold" style="font-size:13pt;">транспортного средства без экипажа</p>
+<p class="center bold">№ ${esc(data.contractNumber)} от «${startDay}» ${startMonthLong} ${startYear}г.</p>
+
+<p class="center bold" style="font-size:15pt; margin-top:20px;">АКТ</p>
+<p class="center bold" style="font-size:13pt;">приема-передачи транспортного средства</p>
+
+<p style="text-align:right;">г. ${esc(data.contractCity || '____________')} «${startDay}» ${startMonthLong} ${startYear}г.</p>
+
+<p>Гр. ${esc(owner?.fullName || '________________________')} именуемый в дальнейшем «<b>Арендодатель</b>», с одной стороны, и гр. ${esc(c.fullName)} именуемый в дальнейшем «<b>Арендатор</b>», с другой стороны, составили настоящий Акт.</p>
+
+<p><b>1.</b> Арендодатель передал, а Арендатор принял легковой автомобиль ${esc(stsInfo)}, легковой автомобиль марки «${esc(data.carBrand)} ${esc(data.carModel)}», ${esc(data.carYear || '____')} года изготовления, VIN ${esc(data.carVin || '____________')}, кузов № ${esc(data.carVin || '____________')}, цвет ${esc(data.carColor || '____________')}, государственный регистрационный номер ${esc(data.carLicensePlate)} именуемый далее. Автомобиль укомплектован полностью.</p>
+
+<p><b>3.</b> При приеме автомобиля Арендатору переданы следующие документы: свидетельство о регистрации, страховой полис по ОСАГО.</p>
+
+<p><b>4.</b> Арендодатель предоставил Арендатору в полном объеме необходимую информацию об автомобиле в соответствии с руководством по эксплуатации.</p>
+
+<p><b>5.</b> Настоящий акт составлен и подписан в двух экземплярах, имеющих равную юридическую силу, и хранится по одному у каждой из сторон.</p>
+
+<p><b>6.</b> Настоящий акт является неотъемлемой частью договора аренды.</p>
+
+<p><b>7.</b> При передачи автомобиля использовались средства фото и видео фиксации.</p>
+
+<p><b>8.</b> <span class="bold">Автомобиль сдается чистый и заправленный, мойка 2500₽ заправка +500₽ по чеку</span></p>
+
+<p class="bold">Арендодатель: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Арендатор:</p>
+<p class="center">___________________/_____________________/ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ___________________/____________________________/</p>
+<p class="center" style="font-size:9pt;">(подпись) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (фамилия, инициалы) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (подпись) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (фамилия, инициалы)</p>
 `
 
   return wrapHtml(`Договор аренды № ${data.contractNumber}`, body)
