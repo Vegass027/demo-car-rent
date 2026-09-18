@@ -20,11 +20,11 @@ interface BulletProps {
 
 function Bullet({ icon: Icon, children }: BulletProps) {
   return (
-    <div className="flex items-start gap-3">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#ffdb33]/40 bg-[#ffdb33]/20">
-        <Icon className="h-4 w-4 text-[#111]" strokeWidth={1.8} />
+    <div className="flex flex-col items-center gap-3 max-w-[280px]">
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#ffdb33]/40 bg-[#ffdb33]/20">
+        <Icon className="h-5 w-5 text-[#111]" strokeWidth={1.8} />
       </span>
-      <p className="flex-1 pt-1.5 text-[15px] leading-[1.6] text-[#2F3437]">{children}</p>
+      <p className="text-[15px] leading-[1.55] text-[#2F3437] md:text-[15px]">{children}</p>
     </div>
   )
 }

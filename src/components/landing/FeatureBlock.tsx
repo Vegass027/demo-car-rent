@@ -61,9 +61,9 @@ export function FeatureBlock({
       )}
       {descriptionInCard && <div className="mb-8 md:mb-10" />}
 
-      {/* Картинка + карточка с текстом сбоку */}
+      {/* Картинка + блок с текстом сбоку (без рамки, центрирован по вертикали) */}
       <div
-        className={`grid grid-cols-1 items-start gap-6 md:gap-8 md:grid-cols-12 ${
+        className={`grid grid-cols-1 items-center gap-6 md:gap-10 md:grid-cols-12 ${
           imagePosition === 'left' ? 'md:[&>*:first-child]:order-2' : ''
         }`}
       >
@@ -85,23 +85,23 @@ export function FeatureBlock({
           </div>
         </motion.div>
 
-        {/* Карточка с description + footer (если нужно) — ровно по размеру текста */}
+        {/* Карточка с description + footer (если нужно) — без рамки, центрирована */}
         {(descriptionInCard || footer) && (
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.6, ease: EASE, delay: 0.1 }}
-            className="md:col-span-4 self-start"
+            className="md:col-span-4"
           >
-            <div className="flex flex-col gap-3 rounded-2xl border border-black/[0.06] bg-white p-5 shadow-[0_2px_16px_rgba(0,0,0,0.04)] md:p-6">
+            <div className="flex flex-col items-center gap-4 text-center">
               {descriptionInCard && (
                 <p className="text-[15px] leading-[1.6] text-[#2F3437] md:text-base">
                   {description}
                 </p>
               )}
               {footer && (
-                <div className="flex flex-col gap-2 text-[14px] leading-[1.6] text-[#2F3437]">
+                <div className="flex flex-col items-center gap-5 text-[14px] leading-[1.6] text-[#2F3437]">
                   {footer}
                 </div>
               )}
