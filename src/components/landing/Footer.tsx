@@ -14,26 +14,32 @@ export function LandingFooter() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:gap-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
           <a
             href="tel:+79930838101"
-            className="group flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-[#111] transition-all duration-200 hover:border-black/20 hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] active:scale-[0.98]"
+            className="group flex items-center gap-3 rounded-full border border-black/10 bg-white px-4 py-2 transition-all duration-200 hover:border-black/20 hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] active:scale-[0.98]"
           >
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black/[0.04] transition-transform duration-200 group-hover:scale-105">
               <Phone className="h-3.5 w-3.5 text-[#111]" />
             </span>
-            8-993-083-81-01
+            <span className="flex flex-col leading-tight">
+              <span className="text-sm font-medium text-[#111]">8-993-083-81-01</span>
+              <span className="text-xs text-[#787774]">Дмитрий Николаевич</span>
+            </span>
           </a>
           <a
             href="https://t.me/ivanov1331"
             target="_blank"
             rel="noreferrer"
-            className="group flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-[#111] transition-all duration-200 hover:border-black/20 hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] active:scale-[0.98]"
+            className="group flex items-center gap-3 rounded-full border border-black/10 bg-white px-4 py-2 transition-all duration-200 hover:border-black/20 hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] active:scale-[0.98]"
           >
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black/[0.04] transition-transform duration-200 group-hover:scale-105">
               <Send className="h-3.5 w-3.5 text-[#111]" />
             </span>
-            @ivanov1331
+            <span className="flex flex-col leading-tight">
+              <span className="text-sm font-medium text-[#111]">@ivanov1331</span>
+              <span className="text-xs text-[#787774]">Дмитрий</span>
+            </span>
           </a>
         </div>
       </div>
