@@ -51,15 +51,19 @@ async function loadCarSchemaAsBase64(): Promise<string | null> {
   try {
     const response = await fetch('/shema-avto.png')
     if (!response.ok) return null
-    const buffer = await response.arrayBuffer()
-    // Конвертируем ArrayBuffer в base64 без spread (чтобы не уронить большие буферы)
-    const bytes = new Uint8Array(buffer)
-    let binary = ''
-    const chunkSize = 8192
-    for (let i = 0; i < bytes.length; i += chunkSize) {
-      binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunkSize)))
-    }
-    return typeof btoa !== 'undefined' ? btoa(binary) : Buffer.from(bytes).toString('base64')
+    const blob = await response.blob()
+    // FileReader.readAsDataURL — нативный API, надёжно работает на iOS Safari
+    // с большими файлами (в отличие от btoa() который падает на 700KB+).
+    return await new Promise<string>((resolve) => {
+      const reader = new FileReader()
+      reader.onload = () => {
+        const result = reader.result as string
+        const idx = result.indexOf(',')
+        resolve(idx >= 0 ? result.slice(idx + 1) : result)
+      }
+      reader.onerror = () => resolve('')
+      reader.readAsDataURL(blob)
+    }) || null
   } catch {
     return null
   }
@@ -165,31 +169,68 @@ ${body}
 </html>`
 }
 
-// Вспомогательная: открыть HTML в новой вкладке (Safari iOS / Android / Desktop)
-// Используем about:blank + document.write, чтобы URL в адресной строке был чистый,
-// а при печати в шапке страницы не отображался blob:https://...
+// Открывает HTML в fullscreen overlay iframe (внутри текущей страницы).
+// Не использует blob URL — URL в адресной строке остаётся прежним,
+// и в шапке при предпросмотре печати не показывается 'blob:https://...'.
 export function openHtmlDocument(html: string): void {
-  // about:blank — same-origin пустая страница. Popup blocker не срабатывает,
-  // потому что это безопасный URL, открытый синхронно в обработчике клика.
-  const win = window.open('about:blank', '_blank')
-  if (!win) {
-    // Fallback: если popup заблокирован (например, iOS Safari без user gesture),
-    // используем blob URL — как раньше
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.target = '_blank'
-    a.rel = 'noopener noreferrer'
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    setTimeout(() => URL.revokeObjectURL(url), 60_000)
-    return
+  // Удаляем предыдущий overlay, если он остался
+  const existing = document.getElementById('html-doc-overlay-root')
+  if (existing) existing.remove()
+
+  const root = document.createElement('div')
+  root.id = 'html-doc-overlay-root'
+  root.style.cssText = `
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: white; z-index: 2147483647;
+    display: flex; flex-direction: column;
+  `
+
+  const toolbar = document.createElement('div')
+  toolbar.style.cssText = `
+    display: flex; gap: 8px; padding: 10px 14px;
+    background: #1f2937; color: white;
+    border-bottom: 1px solid #374151;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    flex-shrink: 0;
+  `
+
+  const printBtn = document.createElement('button')
+  printBtn.textContent = '🖨 Печать / PDF'
+  printBtn.style.cssText = `
+    padding: 8px 16px; background: #3b82f6; color: white;
+    border: none; border-radius: 6px; font-size: 14px;
+    font-weight: 600; cursor: pointer;
+  `
+  printBtn.onclick = () => {
+    const iframe = root.querySelector('iframe')
+    if (iframe && iframe.contentWindow) {
+      iframe.contentWindow.focus()
+      iframe.contentWindow.print()
+    }
   }
-  win.document.open()
-  win.document.write(html)
-  win.document.close()
+
+  const closeBtn = document.createElement('button')
+  closeBtn.textContent = '✕ Закрыть'
+  closeBtn.style.cssText = `
+    padding: 8px 16px; background: #ef4444; color: white;
+    border: none; border-radius: 6px; font-size: 14px;
+    font-weight: 600; cursor: pointer; margin-left: auto;
+  `
+  closeBtn.onclick = () => root.remove()
+
+  toolbar.appendChild(printBtn)
+  toolbar.appendChild(closeBtn)
+
+  const iframe = document.createElement('iframe')
+  iframe.style.cssText = `
+    flex: 1; width: 100%; border: none; background: white;
+  `
+  // srcdoc НЕ создаёт blob URL — это безопасно и не светится в печати
+  iframe.srcdoc = html
+
+  root.appendChild(toolbar)
+  root.appendChild(iframe)
+  document.body.appendChild(root)
 }
 
 // ============================================================
