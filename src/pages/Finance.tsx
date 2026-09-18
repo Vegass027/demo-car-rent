@@ -1250,9 +1250,7 @@ function PayoutHistory({ withdrawals }: PayoutHistoryProps) {
   const filteredPayouts =
     filterCarId === 'all'
       ? payouts
-      : filterCarId === '__global__'
-        ? payouts.filter(w => w.carId === null)
-        : payouts.filter(w => w.carId === filterCarId)
+      : payouts.filter(w => w.carId === filterCarId)
 
   // Получить информацию о машине по carId
   const getCar = (carId: string | null) => {
@@ -1283,12 +1281,6 @@ function PayoutHistory({ withdrawals }: PayoutHistoryProps) {
           </Select.Trigger>
           <Select.Content position="popper" side="bottom">
             <Select.Item value="all">Все машины</Select.Item>
-            <Select.Item value="__global__">
-              <span className="flex items-center gap-2">
-                <Layers className="w-3 h-3" />
-                Только общие (за все машины)
-              </span>
-            </Select.Item>
             {cars?.map((car) => (
               <Select.Item key={car.id} value={car.id}>
                 <div className="flex items-center gap-2">
