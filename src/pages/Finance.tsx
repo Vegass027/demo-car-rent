@@ -1330,61 +1330,64 @@ function PayoutHistory({ withdrawals }: PayoutHistoryProps) {
               >
                 {/* Ряд 1: Шапка — тип выплаты + дата + удалить */}
                 <div
-                   className={`flex items-center justify-between gap-2 px-3 py-2 border-b ${
+                   className={`flex items-center gap-2 px-3 py-2 border-b ${
                      isGlobal
                        ? 'bg-purple-50 border-purple-100'
                        : 'bg-green-50 border-green-100'
                    }`}
                 >
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <span
-                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
-                        isGlobal
-                          ? 'bg-purple-200 text-purple-800'
-                          : 'bg-green-200 text-green-800'
-                      }`}
-                    >
-                      <Wallet className="h-3.5 w-3.5" />
-                    </span>
-                    <span className="font-bold text-sm">ВЫПЛАТА #{index + 1}</span>
-                    <span className="text-muted-foreground/40 select-none">|</span>
-                    <button
-                      onClick={() =>
-                        setConfirmDelete({
-                          id: payout.id,
-                          index: index + 1,
-                          amount: payout.amount,
-                          date: new Date(payout.withdrawalDate).toLocaleDateString('ru-RU'),
-                        })
-                      }
-                      className="p-1 text-muted-foreground hover:text-red-600 transition-colors shrink-0"
-                      title="Удалить выплату"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                  <span
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
+                      isGlobal
+                        ? 'bg-purple-200 text-purple-800'
+                        : 'bg-green-200 text-green-800'
+                    }`}
+                  >
+                    <Wallet className="h-3.5 w-3.5" />
+                  </span>
+                  <span className="font-bold text-sm">ВЫПЛАТА</span>
+                  <span className="text-xs text-muted-foreground tabular-nums">от {new Date(payout.withdrawalDate).toLocaleDateString('ru-RU')}</span>
+                  <span className="text-muted-foreground/40 select-none">|</span>
+                  <span className="text-xs text-muted-foreground/60">#{index + 1}</span>
+                  <span className="flex-1" />
+                  <button
+                    onClick={() =>
+                      setConfirmDelete({
+                        id: payout.id,
+                        index: index + 1,
+                        amount: payout.amount,
+                        date: new Date(payout.withdrawalDate).toLocaleDateString('ru-RU'),
+                      })
+                    }
+                    className="p-1 text-muted-foreground hover:text-red-600 transition-colors shrink-0"
+                    title="Удалить выплату"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Тело: машина, расчёт, остаток */}
+                <div className="px-3 py-2.5 text-sm">
+                  {/* Машина или "За все машины" */}
+                  <div className="mb-2">
                     {isGlobal ? (
-                      <span className="px-2 py-0.5 rounded-full bg-purple-200 text-purple-800 text-xs font-medium shrink-0 ml-1">
+                      <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-medium">
+                        <Layers className="w-3 h-3" />
                         За все машины
                       </span>
                     ) : car ? (
-                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground truncate ml-1">
+                      <span className="flex items-center gap-1.5 text-xs">
                         <span
                           className="w-2.5 h-2.5 rounded-full shrink-0"
                           style={{ backgroundColor: car.colorTag }}
                         />
-                        <span className="truncate">{car.name} ({car.licensePlate})</span>
+                        <span className="font-medium">{car.name}</span>
+                        <span className="text-muted-foreground">({car.licensePlate})</span>
                       </span>
                     ) : null}
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs text-muted-foreground tabular-nums">
-                      {new Date(payout.withdrawalDate).toLocaleDateString('ru-RU')}
-                    </span>
-                  </div>
-                </div>
 
-                {/* Ряд 2: Детали расчёта */}
-                <div className="px-3 py-2.5 text-sm">
+                  {/* Расчёт */}
                   <div className="text-muted-foreground">
                     Расчёт: Прибыль{' '}
                     <span className="font-medium text-foreground">{formatMoney(payout.netProfit)}</span>
@@ -1395,6 +1398,8 @@ function PayoutHistory({ withdrawals }: PayoutHistoryProps) {
                       {formatMoney(payout.amount)}
                     </span>
                   </div>
+
+                  {/* Остаток */}
                   <div className="mt-1.5 text-xs">
                     <span className="text-muted-foreground">Остаток: </span>
                     <span
