@@ -158,6 +158,7 @@ export function Landing() {
           description="Всё, что происходит с машиной за день, вносится в одну форму — не нужно вести отдельные таблицы для доходов, расходов и броней."
           imageSrc="/landing/records-form.png"
           imageAlt="Форма записи: аренда, расходы, бронирования"
+          descriptionInCard
         />
 
         <FeatureBlock
@@ -216,6 +217,7 @@ export function Landing() {
           imageSrc="/landing/analytics.png"
           imageAlt="Таблица сравнения машин по аналитике"
           imagePosition="right"
+          descriptionInCard
         />
 
         <FeatureBlock
@@ -242,6 +244,7 @@ export function Landing() {
           imageSrc="/landing/access.png"
           imageAlt="Доступ с любых устройств — PWA"
           imagePosition="right"
+          descriptionInCard
         />
       </div>
 
