@@ -8,10 +8,6 @@ export function LandingFooter() {
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#ffdb33] border border-black/10">
             <Car className="h-5 w-5 text-[#111]" />
           </span>
-          <div className="min-w-0">
-            <p className="font-head text-base font-semibold text-[#111]">Автопарк CRM</p>
-            <p className="text-sm text-[#787774]">Управление автопарком в одном приложении</p>
-          </div>
         </div>
 
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:gap-4">

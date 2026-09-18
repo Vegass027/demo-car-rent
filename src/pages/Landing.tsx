@@ -80,20 +80,22 @@ export function Landing() {
             кто оплатил и какая машина свободна. Одно приложение вместо блокнота, Excel и памяти.
           </motion.p>
 
-          {/* Триггеры */}
+          {/* Триггеры с тонкими разделителями по краям текста */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: EASE, delay: 0.18 }}
-            className="mt-8 flex flex-col items-center gap-3 sm:mt-10 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-6 sm:gap-y-3"
+            className="mt-8 flex flex-col items-center gap-4 sm:mt-10 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-4 sm:gap-y-4"
           >
             {TRIGGERS.map((t) => (
               <span
                 key={t.label}
-                className="flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.04em] text-[#2F3437] sm:text-[13px]"
+                className="flex w-full max-w-[280px] items-center gap-3 font-mono text-[12px] uppercase tracking-[0.04em] text-[#2F3437] sm:w-auto sm:max-w-none sm:text-[13px]"
               >
+                <span aria-hidden className="h-px flex-1 bg-black/[0.12] sm:w-8 sm:flex-none" />
                 <t.icon className="h-4 w-4 text-[#F97316]" strokeWidth={1.8} />
                 {t.label}
+                <span aria-hidden className="h-px flex-1 bg-black/[0.12] sm:w-8 sm:flex-none" />
               </span>
             ))}
           </motion.div>
@@ -125,7 +127,7 @@ export function Landing() {
       </section>
 
       {/* БЛОКИ */}
-      <div className="divide-y divide-black/[0.04]">
+      <div className="divide-y-2 divide-black/[0.06] border-t border-b border-black/[0.06]">
         <FeatureBlock
           id="dashboard"
           number={1}
