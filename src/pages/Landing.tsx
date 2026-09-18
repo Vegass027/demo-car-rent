@@ -1,6 +1,10 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { ArrowUpRight, Wallet, FileText, Smartphone, PieChart, RefreshCw, type LucideIcon } from 'lucide-react'
+import {
+  ArrowUpRight, Wallet, FileText, Smartphone, PieChart, RefreshCw,
+  Calculator, Layers, Eye, Phone, ClipboardList, Lock, FileCheck,
+  IdCard, StickyNote, TrendingUp, Search, BarChart3, Coins, type LucideIcon,
+} from 'lucide-react'
 import { LandingHeader } from '@/components/landing/Header'
 import { LandingFooter } from '@/components/landing/Footer'
 import { FeatureBlock } from '@/components/landing/FeatureBlock'
@@ -20,11 +24,11 @@ interface BulletProps {
 
 function Bullet({ icon: Icon, children }: BulletProps) {
   return (
-    <div className="flex flex-col items-center gap-3 max-w-[280px]">
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#ffdb33]/40 bg-[#ffdb33]/20">
-        <Icon className="h-5 w-5 text-[#111]" strokeWidth={1.8} />
+    <div className="flex flex-col items-center gap-2.5 max-w-[280px]">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#ffdb33]/40 bg-[#ffdb33]/20">
+        <Icon className="h-4 w-4 text-[#111]" strokeWidth={1.8} />
       </span>
-      <p className="text-[15px] leading-[1.55] text-[#2F3437] md:text-[15px]">{children}</p>
+      <p className="text-[14px] leading-[1.5] text-[#2F3437] text-center">{children}</p>
     </div>
   )
 }
@@ -139,14 +143,14 @@ export function Landing() {
           id="cars"
           number={2}
           title="Каждая машина — как на ладони."
-          description="Каждая машина — это полноценная карточка с историей, фото и текущим статусом. Меняется в один клик прямо на странице."
+          description="Карточка с историей, фото и статусом для каждой машины"
           imageSrc="/landing/car-card.png"
           imageAlt="Карточка машины с историей, фото и статусом"
           imagePosition="left"
           footer={
             <>
-              <p>• Сумма, вложенная в подготовку (страховка, шины, мелкий ремонт), хранится отдельно и участвует в расчёте окупаемости.</p>
-              <p>• Парк может быть любого размера — от одной машины до десятков.</p>
+              <Bullet icon={Calculator}>Сумма подготовки хранится отдельно и участвует в окупаемости</Bullet>
+              <Bullet icon={Layers}>Парк от одной машины до десятков — без ограничений</Bullet>
             </>
           }
         />
@@ -155,14 +159,14 @@ export function Landing() {
           id="timeline"
           number={3}
           title="Календарь занятости машины."
-          description="На странице машины — календарь на месяц, который отвечает на вопрос «когда она свободна» быстрее, чем память или блокнот."
+          description="Месячный календарь показывает когда машина свободна"
           imageSrc="/landing/car-timeline.png"
           imageAlt="Месячный календарь занятости машины"
           imagePosition="right"
           footer={
             <>
-              <p>• Сразу видно простаивающие дни — те, что не приносят денег.</p>
-              <p>• На звонок «нужна машина на неделю» ответ готов за секунду, без сверки записей с менеджером.</p>
+              <Bullet icon={Eye}>Сразу видно простаивающие дни без дохода</Bullet>
+              <Bullet icon={Phone}>Ответ на звонок «нужна машина на неделю» за секунду</Bullet>
             </>
           }
         />
@@ -171,24 +175,25 @@ export function Landing() {
           id="records"
           number={4}
           title="Всё, что было за день — на одной странице."
-          description="Всё, что происходит с машиной за день, вносится в одну форму — не нужно вести отдельные таблицы для доходов, расходов и броней."
+          description="Одна форма вместо отдельных таблиц для доходов, расходов и броней"
           imageSrc="/landing/records-form.png"
           imageAlt="Форма записи: аренда, расходы, бронирования"
           descriptionInCard
+          descriptionIcon={ClipboardList}
         />
 
         <FeatureBlock
           id="buyout"
           number={5}
           title="Выкуп считает себя сам."
-          description="Выкуп — это обычно десятки цифр в голове: сколько уже заплачено, сколько из этого прибыль, а сколько — возврат стоимости машины. Здесь всё считается само."
+          description="Сколько прибыли, сколько возврат стоимости — без блокнота"
           imageSrc="/landing/buyout.png"
           imageAlt="Карточка договора выкупа с историей платежей"
           imagePosition="left"
           footer={
             <>
-              <p>• Договор закрывается с возвратом залога и указанием суммы — выкуплен или отменён.</p>
-              <p>• Файл с договором прикреплён к карточке выкупа.</p>
+              <Bullet icon={Lock}>Договор закрывается с возвратом залога и указанием суммы</Bullet>
+              <Bullet icon={FileCheck}>Файл договора прикреплён к карточке выкупа</Bullet>
             </>
           }
         />
@@ -197,14 +202,14 @@ export function Landing() {
           id="clients"
           number={6}
           title="База клиентов, которая помнит всё за вас."
-          description="ФИО, паспорт, прописка, водительское удостоверение — всё в одном месте. Система сама найдёт существующего клиента и не даст создать дубль."
+          description="Паспорт, прописка, В/У — всё в одном месте, без дублей"
           imageSrc="/landing/clients.png"
           imageAlt="База клиентов с историей аренд"
           imagePosition="right"
           footer={
             <>
-              <p>• Паспорт, прописка, водительское удостоверение хранятся в карточке и сами подставляются в договоры.</p>
-              <p>• Комментарий к клиенту — заметка вроде «не выдавать без предоплаты» не потеряется.</p>
+              <Bullet icon={IdCard}>Паспорт и В/У подставляются в договоры автоматически</Bullet>
+              <Bullet icon={StickyNote}>Заметка вроде «без предоплаты не выдавать» не потеряется</Bullet>
             </>
           }
         />
@@ -212,15 +217,15 @@ export function Landing() {
         <FeatureBlock
           id="journal"
           number={7}
-          title="Вся история автопарка в одной ленте с фильтрами по периодам."
-          description="Все события: сдачи, расходы, залоги, платежи по выкупу — в одной ленте с быстрым выбором периода: сегодня, неделя, месяц или произвольный диапазон."
+          title="История автопарка в одной ленте с фильтрами по периодам."
+          description="Сдачи, расходы, залоги, платежи по выкупу — всё в одной ленте"
           imageSrc="/landing/journal.png"
           imageAlt="Лента событий с фильтрами по периоду"
           imagePosition="left"
           footer={
             <>
-              <p>• Инвестиции (страховка, шины) не путаются с ежедневными расходами — в итоге только реальная операционная прибыль.</p>
-              <p>• Удобно поднять историю по спорной ситуации — что и когда произошло с конкретной машиной.</p>
+              <Bullet icon={TrendingUp}>Инвестиции не путаются с расходами — только реальная прибыль</Bullet>
+              <Bullet icon={Search}>История по спорной ситуации поднимается в два клика</Bullet>
             </>
           }
         />
@@ -229,25 +234,26 @@ export function Landing() {
           id="analytics"
           number={8}
           title="Аналитика — видно, кто зарабатывает, а кто тянет вниз."
-          description="Не всегда очевидно, какая машина реально зарабатывает, а какая «съедает» деньги на ремонте. Таблица сравнения показывает это без раскопок в отчётах."
+          description="Какая машина реально зарабатывает, а какая съедает деньги"
           imageSrc="/landing/analytics.png"
           imageAlt="Таблица сравнения машин по аналитике"
           imagePosition="right"
           descriptionInCard
+          descriptionIcon={BarChart3}
         />
 
         <FeatureBlock
           id="payback"
           number={9}
           title="Когда машина отобьётся — известно заранее."
-          description="«Когда эта машина уже отобьётся?» — вопрос, на который обычно нет точного ответа без подсчётов в блокноте. Здесь ответ есть всегда — по каждой машине и по всему парку."
+          description="Точный ответ по каждой машине и по всему парку"
           imageSrc="/landing/payback.png"
           imageAlt="Окупаемость машин и всего автопарка"
           imagePosition="left"
           footer={
             <>
-              <p>• В сумму «вложено» входит и цена покупки, и все траты на подготовку.</p>
-              <p>• Одна и та же логика работает и для одной машины, и для парка целиком.</p>
+              <Bullet icon={Coins}>«Вложено» = цена покупки + все траты на подготовку</Bullet>
+              <Bullet icon={Layers}>Логика одна — для одной машины и для парка</Bullet>
             </>
           }
         />
@@ -256,11 +262,12 @@ export function Landing() {
           id="access"
           number={10}
           title="Доступно откуда угодно."
-          description="Приложение устанавливается как PWA — прямо на телефон с сайта, без магазина приложений. Работает офлайн, адаптируется под любой экран — от телефона до компьютера."
+          description="PWA прямо с сайта, без магазина приложений"
           imageSrc="/landing/access.png"
           imageAlt="Доступ с любых устройств — PWA"
           imagePosition="right"
           descriptionInCard
+          descriptionIcon={Smartphone}
         />
       </div>
 
