@@ -546,17 +546,33 @@ export function CarDetail() {
   }
 
   // HTML-версии (для просмотра на мобильных — открываются в новой вкладке)
+  // Используем только данные из record (без API-запроса getClient), чтобы избежать
+  // долгих таймаутов на мобильном соединении — данные паспорта для HTML-версии не критичны.
+  const buildClientFromRecord = (record: CarRecord) => ({
+    fullName: record.renterName || '',
+    phone: record.renterPhone || '',
+    birthDate: '',
+    passportSeries: '',
+    passportNumber: '',
+    passportIssuedBy: '',
+    passportIssueDate: '',
+    registrationAddress: '',
+    driverLicenseSeries: '',
+    driverLicenseNumber: '',
+  })
+
   const handleViewContractHTML = async (record: CarRecord) => {
-    if (!car || !record.renterName) {
-      alert('Нет данных клиента для генерации документа')
+    console.log('[handleViewContractHTML] clicked', { recordId: record.id, car: !!car })
+    if (!car) {
+      alert('Машина не загружена')
       return
     }
-    if (!companySettings?.ownerFullName) {
-      alert('В настройках не указаны данные собственника')
+    if (!record.renterName) {
+      alert('Нет данных арендатора')
       return
     }
     try {
-      const clientData = await getClientDataFromRecord(record)
+      const clientData = buildClientFromRecord(record)
       const days = record.startDate && record.endDate
         ? Math.ceil((new Date(record.endDate).getTime() - new Date(record.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
         : 1
@@ -577,34 +593,35 @@ export function CarDetail() {
         totalAmount: record.rentalAmount,
         deposit: record.deposit || 0,
         owner: {
-          fullName: companySettings.ownerFullName || '',
-          birthDate: companySettings.ownerBirthDate || '',
-          passportSeries: companySettings.ownerPassportSeries || '',
-          passportNumber: companySettings.ownerPassportNumber || '',
-          passportIssuedBy: companySettings.ownerPassportIssuedBy || '',
-          passportIssueDate: companySettings.ownerPassportIssueDate || '',
-          registrationAddress: companySettings.ownerRegistrationAddress || '',
-          phone: companySettings.ownerPhone || '',
+          fullName: companySettings?.ownerFullName || '',
+          birthDate: companySettings?.ownerBirthDate || '',
+          passportSeries: companySettings?.ownerPassportSeries || '',
+          passportNumber: companySettings?.ownerPassportNumber || '',
+          passportIssuedBy: companySettings?.ownerPassportIssuedBy || '',
+          passportIssueDate: companySettings?.ownerPassportIssueDate || '',
+          registrationAddress: companySettings?.ownerRegistrationAddress || '',
+          phone: companySettings?.ownerPhone || '',
         },
       })
       openHtmlDocument(html)
     } catch (error) {
       console.error('Ошибка генерации HTML:', error)
-      alert('Ошибка при генерации документа')
+      alert('Ошибка при генерации документа: ' + (error as Error).message)
     }
   }
 
   const handleViewFullContractHTML = async (record: CarRecord) => {
-    if (!car || !record.renterName) {
-      alert('Нет данных клиента для генерации документа')
+    console.log('[handleViewFullContractHTML] clicked', { recordId: record.id, car: !!car })
+    if (!car) {
+      alert('Машина не загружена')
       return
     }
-    if (!companySettings?.ownerFullName) {
-      alert('В настройках не указаны данные собственника')
+    if (!record.renterName) {
+      alert('Нет данных арендатора')
       return
     }
     try {
-      const clientData = await getClientDataFromRecord(record)
+      const clientData = buildClientFromRecord(record)
       const days = record.startDate && record.endDate
         ? Math.ceil((new Date(record.endDate).getTime() - new Date(record.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
         : 1
@@ -626,30 +643,27 @@ export function CarDetail() {
         totalAmount: record.rentalAmount,
         deposit: record.deposit || 0,
         owner: {
-          fullName: companySettings.ownerFullName || '',
-          birthDate: companySettings.ownerBirthDate || '',
-          passportSeries: companySettings.ownerPassportSeries || '',
-          passportNumber: companySettings.ownerPassportNumber || '',
-          passportIssuedBy: companySettings.ownerPassportIssuedBy || '',
-          passportIssueDate: companySettings.ownerPassportIssueDate || '',
-          registrationAddress: companySettings.ownerRegistrationAddress || '',
-          phone: companySettings.ownerPhone || '',
+          fullName: companySettings?.ownerFullName || '',
+          birthDate: companySettings?.ownerBirthDate || '',
+          passportSeries: companySettings?.ownerPassportSeries || '',
+          passportNumber: companySettings?.ownerPassportNumber || '',
+          passportIssuedBy: companySettings?.ownerPassportIssuedBy || '',
+          passportIssueDate: companySettings?.ownerPassportIssueDate || '',
+          registrationAddress: companySettings?.ownerRegistrationAddress || '',
+          phone: companySettings?.ownerPhone || '',
         },
       })
       openHtmlDocument(html)
     } catch (error) {
       console.error('Ошибка генерации HTML:', error)
-      alert('Ошибка при генерации документа')
+      alert('Ошибка при генерации документа: ' + (error as Error).message)
     }
   }
 
   const handleViewServiceActHTML = async (record: CarRecord) => {
-    if (!car || !record.renterName) {
-      alert('Нет данных клиента для генерации документа')
-      return
-    }
-    if (!companySettings?.ownerFullName) {
-      alert('В настройках не указаны данные собственника')
+    console.log('[handleViewServiceActHTML] clicked', { recordId: record.id, car: !!car })
+    if (!car) {
+      alert('Машина не загружена')
       return
     }
     try {
@@ -659,14 +673,14 @@ export function CarDetail() {
         carName: car.name,
         carLicensePlate: car.licensePlate,
         carVin: car.vin || '',
-        ownerFullName: companySettings.ownerFullName || '',
+        ownerFullName: companySettings?.ownerFullName || '',
         works: [{ name: 'Обслуживание', price: record.otherCost || 0 }],
         totalAmount: record.otherCost || 0,
       })
       openHtmlDocument(html)
     } catch (error) {
       console.error('Ошибка генерации HTML:', error)
-      alert('Ошибка при генерации документа')
+      alert('Ошибка при генерации документа: ' + (error as Error).message)
     }
   }
 
@@ -1442,15 +1456,15 @@ export function CarDetail() {
                                 <button
                                   onClick={() => handleGenerateFullContractFromHistory(record)}
                                   disabled={generatingDocs[`${record.id}-full-contract`]}
-                                  className="flex items-center gap-2 px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
+                                  className="flex items-center gap-1 px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
                                 >
                                   <Download className="w-3 h-3" />
-                                  {generatingDocs[`${record.id}-full-contract`] ? 'Генерация...' : 'Скачать DOCX'}
+                                  {generatingDocs[`${record.id}-full-contract`] ? 'Генерация...' : 'Договор аренды (.docx)'}
                                 </button>
                                 <button
                                   onClick={() => handleViewFullContractHTML(record)}
-                                  className="flex items-center gap-2 px-2 py-1 text-xs text-blue-600/70 hover:bg-blue-50 rounded transition-colors"
-                                  title="Открыть для просмотра в браузере (рекомендуется для мобильных)"
+                                  className="flex items-center gap-1 px-2 py-1 text-xs text-blue-600/70 hover:bg-blue-50 rounded transition-colors"
+                                  title="Открыть договор аренды для просмотра в браузере"
                                 >
                                   <Eye className="w-3 h-3" />
                                   Открыть
@@ -1461,15 +1475,15 @@ export function CarDetail() {
                                 <button
                                   onClick={() => handleGenerateContractFromHistory(record)}
                                   disabled={generatingDocs[`${record.id}-contract`]}
-                                  className="flex items-center gap-2 px-2 py-1 text-xs text-green-600 hover:bg-green-50 rounded transition-colors disabled:opacity-50"
+                                  className="flex items-center gap-1 px-2 py-1 text-xs text-green-600 hover:bg-green-50 rounded transition-colors disabled:opacity-50"
                                 >
                                   <Download className="w-3 h-3" />
-                                  {generatingDocs[`${record.id}-contract`] ? 'Генерация...' : 'Скачать DOCX'}
+                                  {generatingDocs[`${record.id}-contract`] ? 'Генерация...' : 'Акт приёма-передачи (.docx)'}
                                 </button>
                                 <button
                                   onClick={() => handleViewContractHTML(record)}
-                                  className="flex items-center gap-2 px-2 py-1 text-xs text-green-600/70 hover:bg-green-50 rounded transition-colors"
-                                  title="Открыть для просмотра в браузере (рекомендуется для мобильных)"
+                                  className="flex items-center gap-1 px-2 py-1 text-xs text-green-600/70 hover:bg-green-50 rounded transition-colors"
+                                  title="Открыть акт приёма-передачи для просмотра в браузере"
                                 >
                                   <Eye className="w-3 h-3" />
                                   Открыть
@@ -1480,15 +1494,15 @@ export function CarDetail() {
                                 <button
                                   onClick={() => handleGenerateServiceActFromHistory(record)}
                                   disabled={generatingDocs[`${record.id}-service-act`]}
-                                  className="flex items-center gap-2 px-2 py-1 text-xs text-purple-600 hover:bg-purple-50 rounded transition-colors disabled:opacity-50"
+                                  className="flex items-center gap-1 px-2 py-1 text-xs text-purple-600 hover:bg-purple-50 rounded transition-colors disabled:opacity-50"
                                 >
                                   <Download className="w-3 h-3" />
-                                  {generatingDocs[`${record.id}-service-act`] ? 'Генерация...' : 'Скачать DOCX'}
+                                  {generatingDocs[`${record.id}-service-act`] ? 'Генерация...' : 'Акт выполненных работ (.docx)'}
                                 </button>
                                 <button
                                   onClick={() => handleViewServiceActHTML(record)}
-                                  className="flex items-center gap-2 px-2 py-1 text-xs text-purple-600/70 hover:bg-purple-50 rounded transition-colors"
-                                  title="Открыть для просмотра в браузере (рекомендуется для мобильных)"
+                                  className="flex items-center gap-1 px-2 py-1 text-xs text-purple-600/70 hover:bg-purple-50 rounded transition-colors"
+                                  title="Открыть акт выполненных работ для просмотра в браузере"
                                 >
                                   <Eye className="w-3 h-3" />
                                   Открыть
