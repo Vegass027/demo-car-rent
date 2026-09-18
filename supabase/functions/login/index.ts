@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
     // 1. Env vars
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const JWT_SECRET = Deno.env.get("JWT_SECRET");
+    const JWT_SECRET = Deno.env.get("SUPABASE_JWT_SECRET") ?? Deno.env.get("JWT_SECRET");
     console.log("ENV check:", {
       hasUrl: !!SUPABASE_URL,
       hasKey: !!SERVICE_KEY,

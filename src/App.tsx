@@ -5,6 +5,7 @@ import { queryClient } from '@/lib/queryClient'
 import { useCurrentUser } from '@/hooks/useAuth'
 import { useAppStore } from '@/store/useAppStore'
 import { Login } from '@/pages/Login'
+import { Landing } from '@/pages/Landing'
 import { Dashboard } from '@/pages/Dashboard'
 import { Cars } from '@/pages/Cars'
 import { CarDetail } from '@/pages/CarDetail'
@@ -12,7 +13,6 @@ import { Journal } from '@/pages/Journal'
 import { Finance } from '@/pages/Finance'
 import { Offline } from '@/pages/Offline'
 import { AppLayout } from '@/components/features/AppLayout'
-import { InstallPromptBanner } from '@/components/features/InstallPromptBanner'
 import { PWAStatusBar } from '@/components/features/PWAStatusBar'
 import { Toaster } from '@/components/retroui/Sonner'
 
@@ -38,31 +38,42 @@ function AppRoutes() {
     )
   }
 
-  if (!user) {
-    return (
-      <Routes>
-        <Route path="/login" element={<Login onLogin={() => {}} />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    )
-  }
-
+  // Публичный лендинг — доступен и авторизованным, и нет
+  // Публичный /login — только для неавторизованных
   return (
-    <>
-      <AppLayout>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/cars" element={<Cars />} />
-          <Route path="/cars/:id" element={<CarDetail />} />
-          <Route path="/journal" element={<Journal />} />
-          <Route path="/finance" element={<Finance />} />
-          <Route path="/offline" element={<Offline />} />
+    <Routes>
+      <Route path="/landing" element={<Landing />} />
+
+      {!user && (
+        <>
+          <Route path="/login" element={<Login onLogin={() => {}} />} />
+          <Route path="*" element={<Navigate to="/landing" replace />} />
+        </>
+      )}
+
+      {user && (
+        <>
+          <Route
+            path="/*"
+            element={
+              <AppLayout>
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/cars" element={<Cars />} />
+                  <Route path="/cars/:id" element={<CarDetail />} />
+                  <Route path="/journal" element={<Journal />} />
+                  <Route path="/finance" element={<Finance />} />
+                  <Route path="/offline" element={<Offline />} />
+                  <Route path="/login" element={<Navigate to="/" replace />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </AppLayout>
+            }
+          />
           <Route path="/login" element={<Navigate to="/" replace />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </AppLayout>
-      <InstallPromptBanner />
-    </>
+        </>
+      )}
+    </Routes>
   )
 }
 
