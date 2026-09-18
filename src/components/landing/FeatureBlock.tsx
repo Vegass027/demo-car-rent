@@ -47,34 +47,33 @@ export function FeatureBlock({
       id={id}
       className="mx-auto w-full max-w-[1400px] px-4 py-12 md:px-8 md:py-20 scroll-mt-20"
     >
-      {/* Заголовок — в одну строку */}
+      {/* Шапка блока: цифра (по центру группы) + заголовок + подзаголовок с разделителем */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.6, ease: EASE }}
-        className="mb-3 flex items-center gap-4"
+        className="mb-10 grid grid-cols-[auto_1fr] items-center gap-4 md:mb-14"
       >
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-black/10 bg-white font-head text-base font-semibold text-[#111]">
           {number}
         </span>
-        <h2 className="font-head text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-[#111] md:text-3xl lg:text-[36px] whitespace-nowrap">
-          {title}
-        </h2>
+        {!descriptionInCard ? (
+          <div>
+            <h2 className="font-head text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-[#111] md:text-3xl lg:text-[36px] whitespace-nowrap">
+              {title}
+            </h2>
+            <p className="mt-3 max-w-full truncate whitespace-nowrap border-t border-black/[0.08] pt-3 text-[15px] leading-[1.4] text-[#787774] md:text-base">
+              {description}
+            </p>
+          </div>
+        ) : (
+          <h2 className="font-head text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-[#111] md:text-3xl lg:text-[36px] whitespace-nowrap">
+            {title}
+          </h2>
+        )}
       </motion.div>
 
-      {/* Подзаголовок — отдельной строкой под заголовком, в одну строку */}
-      {!descriptionInCard && (
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.6, ease: EASE, delay: 0.05 }}
-          className="mb-10 max-w-full truncate whitespace-nowrap text-[15px] leading-[1.4] text-[#787774] md:text-base md:mb-14"
-        >
-          {description}
-        </motion.p>
-      )}
       {descriptionInCard && <div className="mb-8 md:mb-10" />}
 
       {/* Картинка + блок с текстом сбоку (без рамки, центрирован по вертикали) */}
