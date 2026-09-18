@@ -1330,11 +1330,11 @@ function PayoutHistory({ withdrawals }: PayoutHistoryProps) {
               >
                 {/* Ряд 1: Шапка — тип выплаты + дата + удалить */}
                 <div
-                  className={`flex items-center justify-between gap-2 px-3 py-2 border-b ${
-                    isGlobal
-                      ? 'bg-purple-50 border-purple-100'
-                      : 'bg-green-50 border-green-100'
-                  }`}
+                   className={`flex items-center justify-between gap-2 px-3 py-2 border-b ${
+                     isGlobal
+                       ? 'bg-purple-50 border-purple-100'
+                       : 'bg-green-50 border-green-100'
+                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <span
@@ -1347,12 +1347,27 @@ function PayoutHistory({ withdrawals }: PayoutHistoryProps) {
                       <Wallet className="h-3.5 w-3.5" />
                     </span>
                     <span className="font-bold text-sm">ВЫПЛАТА #{index + 1}</span>
+                    <span className="text-muted-foreground/40 select-none">|</span>
+                    <button
+                      onClick={() =>
+                        setConfirmDelete({
+                          id: payout.id,
+                          index: index + 1,
+                          amount: payout.amount,
+                          date: new Date(payout.withdrawalDate).toLocaleDateString('ru-RU'),
+                        })
+                      }
+                      className="p-1 text-muted-foreground hover:text-red-600 transition-colors shrink-0"
+                      title="Удалить выплату"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                     {isGlobal ? (
-                      <span className="px-2 py-0.5 rounded-full bg-purple-200 text-purple-800 text-xs font-medium shrink-0">
+                      <span className="px-2 py-0.5 rounded-full bg-purple-200 text-purple-800 text-xs font-medium shrink-0 ml-1">
                         За все машины
                       </span>
                     ) : car ? (
-                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
+                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground truncate ml-1">
                         <span
                           className="w-2.5 h-2.5 rounded-full shrink-0"
                           style={{ backgroundColor: car.colorTag }}
@@ -1365,27 +1380,13 @@ function PayoutHistory({ withdrawals }: PayoutHistoryProps) {
                     <span className="text-xs text-muted-foreground tabular-nums">
                       {new Date(payout.withdrawalDate).toLocaleDateString('ru-RU')}
                     </span>
-                    <button
-                      onClick={() =>
-                        setConfirmDelete({
-                          id: payout.id,
-                          index: index + 1,
-                          amount: payout.amount,
-                          date: new Date(payout.withdrawalDate).toLocaleDateString('ru-RU'),
-                        })
-                      }
-                      className="p-1 text-muted-foreground hover:text-red-600 transition-colors"
-                      title="Удалить выплату"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
                   </div>
                 </div>
 
                 {/* Ряд 2: Детали расчёта */}
                 <div className="px-3 py-2.5 text-sm">
                   <div className="text-muted-foreground">
-                    Прибыль{' '}
+                    Расчёт: Прибыль{' '}
                     <span className="font-medium text-foreground">{formatMoney(payout.netProfit)}</span>
                     {' − '}
                     <span className="font-medium text-foreground">{payout.percent}%</span>
@@ -1414,6 +1415,7 @@ function PayoutHistory({ withdrawals }: PayoutHistoryProps) {
           Нет выплат за выбранный период
         </p>
       )}
+
 
       {/* Модалка подтверждения удаления */}
       <Dialog
