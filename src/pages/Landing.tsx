@@ -80,22 +80,20 @@ export function Landing() {
             кто оплатил и какая машина свободна. Одно приложение вместо блокнота, Excel и памяти.
           </motion.p>
 
-          {/* Триггеры с тонкими разделителями по краям текста */}
+          {/* Триггеры: рамка сверху и снизу всей группы */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: EASE, delay: 0.18 }}
-            className="mt-8 flex flex-col items-center gap-4 sm:mt-10 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-4 sm:gap-y-4"
+            className="mt-8 flex w-full max-w-xs flex-col items-center gap-3 border-y border-black/[0.12] py-4 sm:mt-10 sm:max-w-2xl sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-6 sm:gap-y-3"
           >
             {TRIGGERS.map((t) => (
               <span
                 key={t.label}
-                className="flex w-full max-w-[280px] items-center gap-3 font-mono text-[12px] uppercase tracking-[0.04em] text-[#2F3437] sm:w-auto sm:max-w-none sm:text-[13px]"
+                className="flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.04em] text-[#2F3437] sm:text-[13px]"
               >
-                <span aria-hidden className="h-px flex-1 bg-black/[0.12] sm:w-8 sm:flex-none" />
                 <t.icon className="h-4 w-4 text-[#F97316]" strokeWidth={1.8} />
                 {t.label}
-                <span aria-hidden className="h-px flex-1 bg-black/[0.12] sm:w-8 sm:flex-none" />
               </span>
             ))}
           </motion.div>
