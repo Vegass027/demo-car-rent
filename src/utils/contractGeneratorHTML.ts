@@ -76,7 +76,7 @@ const CSS = `
   }
   h1, h2, h3, h4 { margin: 14px 0 8px; font-weight: bold; }
   h1 { font-size: 14pt; text-align: center; text-transform: uppercase; }
-  h2 { font-size: 12pt; text-transform: uppercase; }
+  h2 { font-size: 12pt; text-transform: uppercase; page-break-after: avoid; }
   h3 { font-size: 11pt; }
   p { margin: 6px 0; text-align: justify; }
   .center { text-align: center; }
@@ -90,7 +90,9 @@ const CSS = `
     table-layout: fixed;  /* КРИТИЧНО: фиксированный layout колонок */
     word-wrap: break-word;
     overflow-wrap: break-word;
+    page-break-inside: auto;
   }
+  tr { page-break-inside: avoid; }
   td {
     border: 1px solid #000;
     padding: 4px 6px;
@@ -101,12 +103,15 @@ const CSS = `
   .label { width: 28%; }
   .value { width: 22%; }
   .row-label { font-weight: bold; }
+  ul { margin: 6px 0; padding-left: 24px; }
+  li { margin: 3px 0; }
   .signature {
     margin-top: 40px;
     display: flex;
     justify-content: space-between;
     gap: 20px;
     page-break-inside: avoid;
+    page-break-before: auto;
   }
   .signature > div { flex: 1; }
   .signature .line {
@@ -118,9 +123,14 @@ const CSS = `
   }
   .empty { color: #999; }
   .no-break { page-break-inside: avoid; }
+  .page-break { page-break-before: always; }
   @media print {
     body { padding: 0; }
     .no-print { display: none !important; }
+  }
+  @media screen and (max-width: 600px) {
+    body { padding: 12px; font-size: 10.5pt; }
+    td { padding: 3px 4px; font-size: 9.5pt; }
   }
 `
 

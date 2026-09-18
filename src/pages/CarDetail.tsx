@@ -1450,20 +1450,21 @@ export function CarDetail() {
                           
                           {/* Кнопки документов - отцентрированы на мобильных */}
                           {record.renterName && (
-                            <div className="flex flex-col items-center sm:items-start gap-1 mt-2 pt-2 border-t border-border">
+                            <div className="flex flex-col items-stretch gap-1.5 mt-2 pt-2 border-t border-border w-full">
                               {/* Договор аренды */}
-                              <div className="flex flex-wrap items-center gap-2">
+                              <div className="flex items-center gap-2 w-full">
                                 <button
                                   onClick={() => handleGenerateFullContractFromHistory(record)}
                                   disabled={generatingDocs[`${record.id}-full-contract`]}
-                                  className="flex items-center gap-1 px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
+                                  className="flex-1 min-w-0 flex items-center justify-center gap-1 px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50 truncate"
+                                  title="Скачать договор аренды (.docx)"
                                 >
-                                  <Download className="w-3 h-3" />
-                                  {generatingDocs[`${record.id}-full-contract`] ? 'Генерация...' : 'Договор аренды (.docx)'}
+                                  <Download className="w-3 h-3 shrink-0" />
+                                  <span className="truncate">{generatingDocs[`${record.id}-full-contract`] ? 'Генерация...' : 'Договор аренды'}</span>
                                 </button>
                                 <button
                                   onClick={() => handleViewFullContractHTML(record)}
-                                  className="flex items-center gap-1 px-2 py-1 text-xs text-blue-600/70 hover:bg-blue-50 rounded transition-colors"
+                                  className="flex items-center gap-1 px-2 py-1 text-xs text-blue-600/70 hover:bg-blue-50 rounded transition-colors shrink-0"
                                   title="Открыть договор аренды для просмотра в браузере"
                                 >
                                   <Eye className="w-3 h-3" />
@@ -1471,18 +1472,19 @@ export function CarDetail() {
                                 </button>
                               </div>
                               {/* Акт приёма-передачи */}
-                              <div className="flex flex-wrap items-center gap-2">
+                              <div className="flex items-center gap-2 w-full">
                                 <button
                                   onClick={() => handleGenerateContractFromHistory(record)}
                                   disabled={generatingDocs[`${record.id}-contract`]}
-                                  className="flex items-center gap-1 px-2 py-1 text-xs text-green-600 hover:bg-green-50 rounded transition-colors disabled:opacity-50"
+                                  className="flex-1 min-w-0 flex items-center justify-center gap-1 px-2 py-1 text-xs text-green-600 hover:bg-green-50 rounded transition-colors disabled:opacity-50 truncate"
+                                  title="Скачать акт приёма-передачи (.docx)"
                                 >
-                                  <Download className="w-3 h-3" />
-                                  {generatingDocs[`${record.id}-contract`] ? 'Генерация...' : 'Акт приёма-передачи (.docx)'}
+                                  <Download className="w-3 h-3 shrink-0" />
+                                  <span className="truncate">{generatingDocs[`${record.id}-contract`] ? 'Генерация...' : 'Акт приёма-передачи'}</span>
                                 </button>
                                 <button
                                   onClick={() => handleViewContractHTML(record)}
-                                  className="flex items-center gap-1 px-2 py-1 text-xs text-green-600/70 hover:bg-green-50 rounded transition-colors"
+                                  className="flex items-center gap-1 px-2 py-1 text-xs text-green-600/70 hover:bg-green-50 rounded transition-colors shrink-0"
                                   title="Открыть акт приёма-передачи для просмотра в браузере"
                                 >
                                   <Eye className="w-3 h-3" />
@@ -1490,18 +1492,19 @@ export function CarDetail() {
                                 </button>
                               </div>
                               {/* Акт выполненных работ */}
-                              <div className="flex flex-wrap items-center gap-2">
+                              <div className="flex items-center gap-2 w-full">
                                 <button
                                   onClick={() => handleGenerateServiceActFromHistory(record)}
                                   disabled={generatingDocs[`${record.id}-service-act`]}
-                                  className="flex items-center gap-1 px-2 py-1 text-xs text-purple-600 hover:bg-purple-50 rounded transition-colors disabled:opacity-50"
+                                  className="flex-1 min-w-0 flex items-center justify-center gap-1 px-2 py-1 text-xs text-purple-600 hover:bg-purple-50 rounded transition-colors disabled:opacity-50 truncate"
+                                  title="Скачать акт выполненных работ (.docx)"
                                 >
-                                  <Download className="w-3 h-3" />
-                                  {generatingDocs[`${record.id}-service-act`] ? 'Генерация...' : 'Акт выполненных работ (.docx)'}
+                                  <Download className="w-3 h-3 shrink-0" />
+                                  <span className="truncate">{generatingDocs[`${record.id}-service-act`] ? 'Генерация...' : 'Акт выполненных работ'}</span>
                                 </button>
                                 <button
                                   onClick={() => handleViewServiceActHTML(record)}
-                                  className="flex items-center gap-1 px-2 py-1 text-xs text-purple-600/70 hover:bg-purple-50 rounded transition-colors"
+                                  className="flex items-center gap-1 px-2 py-1 text-xs text-purple-600/70 hover:bg-purple-50 rounded transition-colors shrink-0"
                                   title="Открыть акт выполненных работ для просмотра в браузере"
                                 >
                                   <Eye className="w-3 h-3" />
