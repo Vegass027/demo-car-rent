@@ -31,13 +31,16 @@ export function LandingHeader() {
   // Telegram WebApp: фиксируем CSS-переменную с высотой стабильного viewport,
   // иначе position:sticky ломается при изменении viewport (появление/скрытие клавиатуры).
   useEffect(() => {
-    const tg = window.Telegram?.WebApp as (typeof window.Telegram.WebApp & {
-      onEvent?: (event: string, handler: () => void) => void
-      offEvent?: (event: string, handler: () => void) => void
-    }) | undefined
+    const tg = (window.Telegram as { WebApp?: unknown } | undefined)?.WebApp as
+      | (Record<string, unknown> & {
+          viewportStableHeight?: number
+          onEvent?: (event: string, handler: () => void) => void
+          offEvent?: (event: string, handler: () => void) => void
+        })
+      | undefined
     if (!tg) return
     const update = () => {
-      const stable = tg.viewportStableHeight || window.innerHeight
+      const stable = (tg.viewportStableHeight as number) || window.innerHeight
       document.documentElement.style.setProperty('--tg-viewport-stable-height', `${stable}px`)
     }
     update()
