@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Menu, X, Car } from 'lucide-react'
+import { Menu, X, Car, ArrowUpRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
@@ -71,9 +71,12 @@ export function LandingHeader() {
         <div className="flex items-center gap-2">
           <Link
             to="/login"
-            className="hidden md:inline-flex items-center justify-center rounded-full bg-[#111] px-5 py-2 text-sm font-medium text-white transition-all duration-200 hover:bg-[#333] active:scale-[0.98]"
+            className="group hidden md:inline-flex items-center gap-2 rounded-full bg-[#111] pl-5 pr-1.5 py-1.5 text-sm font-medium text-white transition-all duration-200 hover:bg-[#333] active:scale-[0.98]"
           >
             Открыть демо
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-[1px] group-hover:scale-105">
+              <ArrowUpRight className="h-4 w-4 text-white" strokeWidth={2} />
+            </span>
           </Link>
           <button
             className="lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-md border border-black/10 bg-white/60 backdrop-blur"
@@ -111,9 +114,12 @@ export function LandingHeader() {
               <Link
                 to="/login"
                 onClick={() => setMobileOpen(false)}
-                className="mt-2 inline-flex items-center justify-center rounded-full bg-[#111] px-5 py-2.5 text-sm font-medium text-white"
+                className="group mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-[#111] px-5 py-2.5 text-sm font-medium text-white"
               >
                 Открыть демо
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-[1px]">
+                  <ArrowUpRight className="h-3.5 w-3.5 text-white" strokeWidth={2} />
+                </span>
               </Link>
             </div>
           </motion.nav>

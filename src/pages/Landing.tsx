@@ -91,7 +91,7 @@ export function Landing() {
                 key={t.label}
                 className="flex items-center gap-2 font-mono text-[13px] uppercase tracking-[0.04em] text-[#2F3437]"
               >
-                <t.icon className="h-4 w-4 text-[#111]" strokeWidth={1.6} />
+                <t.icon className="h-4 w-4 text-[#F97316]" strokeWidth={1.8} />
                 {t.label}
               </span>
             ))}

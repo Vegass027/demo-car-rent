@@ -55,20 +55,20 @@ export function FeatureBlock({
         transition={{ duration: 0.6, ease: EASE }}
         className="mb-10 grid grid-cols-[auto_1fr] items-center gap-4 md:mb-14"
       >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-black/10 bg-white font-head text-base font-semibold text-[#111]">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-black/10 bg-white font-head text-[15px] font-semibold text-[#111] md:h-11 md:w-11 md:text-base">
           {number}
         </span>
         {!descriptionInCard ? (
           <div>
-            <h2 className="font-head text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-[#111] md:text-3xl lg:text-[36px] whitespace-nowrap">
+            <h2 className="font-head text-[20px] font-semibold leading-[1.15] tracking-[-0.02em] text-[#111] md:text-3xl lg:text-[36px] md:whitespace-nowrap">
               {title}
             </h2>
-            <p className="mt-3 max-w-full truncate whitespace-nowrap border-t border-black/[0.08] pt-3 text-[15px] leading-[1.4] text-[#787774] md:text-base">
+            <p className="mt-3 max-w-full border-t border-black/[0.08] pt-3 text-[14px] leading-[1.4] text-[#787774] md:truncate md:whitespace-nowrap md:text-base">
               {description}
             </p>
           </div>
         ) : (
-          <h2 className="font-head text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-[#111] md:text-3xl lg:text-[36px] whitespace-nowrap">
+          <h2 className="font-head text-[20px] font-semibold leading-[1.15] tracking-[-0.02em] text-[#111] md:text-3xl lg:text-[36px] md:whitespace-nowrap">
             {title}
           </h2>
         )}

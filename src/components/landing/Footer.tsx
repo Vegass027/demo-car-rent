@@ -44,7 +44,7 @@ export function LandingFooter() {
         </div>
       </div>
       <div className="border-t border-black/[0.06]">
-        <p className="mx-auto max-w-7xl px-4 py-5 text-xs text-[#787774] md:px-8">
+        <p className="mx-auto max-w-7xl px-4 py-5 text-center text-xs text-[#787774] md:px-8">
           © {new Date().getFullYear()} Автопарк CRM. Демо-версия для ознакомления.
         </p>
       </div>
