@@ -156,34 +156,21 @@ export async function searchClients(query: string): Promise<Client[]> {
   const isPhoneQuery = /\d/.test(query)
   
   if (isPhoneQuery) {
-    // Поиск по телефону
+    // Поиск по телефону — только по чистым цифрам (без спецсимволов для безопасности PostgREST)
     const digits = normalizePhone(query)
     if (digits.length < 4) return []  // Минимум 4 цифры для поиска
 
-    // Генерируем варианты поиска с разными форматами записи в БД
-    const searchVariants: string[] = []
+    const searchVariants: string[] = [`%${digits}%`]
 
-    // Если начинается с 8 — ищем разные варианты с +7
+    // Если начинается с 8 — также ищем вариант с 7 (89001234567 ↔ 79001234567)
     if (digits.startsWith('8')) {
-      const without8 = digits.slice(1)  // "8900..." → "900..."
-      searchVariants.push(`%${'+7' + without8}%`)        // +7900 (без пробела)
-      searchVariants.push(`%${'+7 ' + without8}%`)       // +7 900 (с пробелом)
-      searchVariants.push(`%${'+7(' + without8}%`)       // +7(900 (со скобкой)
-      searchVariants.push(`%${'+7 (' + without8}%`)      // +7 (900 (с пробелом и скобкой)
-      searchVariants.push(`%${'(' + without8}%`)         // (900 (только скобка)
-      searchVariants.push(`%${'(' + without8.slice(0, 3) + ')' + without8.slice(3)}%`) // (900)123 (полный формат)
+      searchVariants.push(`%${'7' + digits.slice(1)}%`)
     }
-    // Если начинается с 7 — ищем и с 8
+    // Если начинается с 7 — также ищем вариант с 8
     if (digits.startsWith('7')) {
-      const without7 = digits.slice(1)
-      searchVariants.push(`%${'8' + without7}%`)         // 8900 (без +7)
-      searchVariants.push(`%${'+' + digits}%`)           // +7900
-      searchVariants.push(`%${'8 ' + without7}%`)        // 8 900 (с пробелом)
+      searchVariants.push(`%${'8' + digits.slice(1)}%`)
     }
-    // Всегда ищем по введённым цифрам
-    searchVariants.push(`%${digits}%`)
 
-    // Ищем по всем вариантам через OR
     const orConditions = searchVariants.map(v => `phone.ilike.${v}`).join(',')
 
     const { data, error } = await supabase
