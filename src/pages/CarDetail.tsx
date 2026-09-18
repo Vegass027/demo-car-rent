@@ -668,14 +668,24 @@ export function CarDetail() {
     }
     try {
       const html = generateServiceActDocumentHTML({
+        actNumber: generateContractNumber().replace('ККР-', 'А-'),
         contractNumber: generateContractNumber(),
         contractDate: record.recordDate,
         carName: car.name,
         carLicensePlate: car.licensePlate,
         carVin: car.vin || '',
-        ownerFullName: companySettings?.ownerFullName || '',
-        works: [{ name: 'Обслуживание', price: record.otherCost || 0 }],
-        totalAmount: record.otherCost || 0,
+        startDate: record.startDate || record.recordDate,
+        endDate: record.endDate || record.recordDate,
+        rentalDays: (record.startDate && record.endDate)
+          ? Math.ceil((new Date(record.endDate).getTime() - new Date(record.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
+          : 1,
+        dailyPrice: record.rentalAmount / ((record.startDate && record.endDate)
+          ? Math.ceil((new Date(record.endDate).getTime() - new Date(record.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
+          : 1),
+        totalAmount: record.rentalAmount,
+        executor: { fullName: companySettings?.ownerFullName || '' },
+        customer: { fullName: record.renterName || '' },
+        totalAmountWords: '',
       })
       openHtmlDocument(html)
     } catch (error) {
