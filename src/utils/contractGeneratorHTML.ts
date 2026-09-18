@@ -146,11 +146,19 @@ ${body}
 }
 
 // Вспомогательная: открыть HTML в новой вкладке (Safari iOS / Android / Desktop)
+// Используем <a target="_blank"> вместо window.open — обходит popup blocker на iOS
 export function openHtmlDocument(html: string): void {
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
   const url = URL.createObjectURL(blob)
-  window.open(url, '_blank')
-  // Освобождаем URL через минуту (когда вкладка уже загрузилась)
+  const a = document.createElement('a')
+  a.href = url
+  a.target = '_blank'
+  a.rel = 'noopener noreferrer'
+  // Симулируем клик — обязательно в том же event loop, иначе iOS блокирует
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  // Освобождаем URL через минуту
   setTimeout(() => URL.revokeObjectURL(url), 60_000)
 }
 

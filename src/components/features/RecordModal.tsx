@@ -439,15 +439,23 @@ export function RecordModal({
 
       // На мобильном открываем HTML в браузере (DOCX криво рендерится в Safari)
       // На десктопе сохраняем DOCX (редактируемый формат)
+      console.log('[RecordModal] handleGenerateContract, isMobile:', isMobileDevice())
       if (isMobileDevice()) {
-        const html = generateContractDocumentHTML(data)
-        openHtmlDocument(html)
+        try {
+          const html = generateContractDocumentHTML(data)
+          console.log('[RecordModal] HTML generated, length:', html.length)
+          openHtmlDocument(html)
+          console.log('[RecordModal] openHtmlDocument called')
+        } catch (htmlErr) {
+          console.error('[RecordModal] HTML generation error:', htmlErr)
+          alert('Ошибка генерации HTML: ' + (htmlErr as Error).message)
+        }
       } else {
         await generateContractDocument(data)
       }
     } catch (error) {
       console.error('Ошибка генерации акта:', error)
-      alert('Ошибка при генерации акта')
+      alert('Ошибка при генерации акта: ' + (error as Error).message)
     } finally {
       setIsGeneratingContract(false)
     }
@@ -1142,42 +1150,42 @@ export function RecordModal({
                 </div>
                 
                 {/* Кнопки печати документов */}
-                <div className="pt-6 space-y-3 mt-6 border-t border-border relative z-0 pointer-events-none">
+                <div className="pt-6 space-y-3 mt-6 border-t border-border">
                   {/* 1. Договор аренды */}
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full border-blue-500 text-blue-700 hover:bg-blue-100 pointer-events-auto"
+                    className="w-full border-blue-500 text-blue-700 hover:bg-blue-100"
                     onClick={handleGenerateSimpleRentalContract}
                     disabled={isGeneratingContract || isGeneratingServiceAct || !contractClient.fullName}
                   >
                     {isGeneratingSimpleRental ? '⏳ Генерация...' : '📄 Печать договора аренды'}
                   </Button>
-                  
+
                   {/* 2. Акт приёма-передачи */}
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full border-green-500 text-green-700 hover:bg-green-100 pointer-events-auto"
+                    className="w-full border-green-500 text-green-700 hover:bg-green-100"
                     onClick={handleGenerateContract}
                     disabled={isGeneratingContract || isGeneratingServiceAct || !contractClient.fullName}
                   >
                     {isGeneratingContract ? '⏳ Генерация...' : '📋 Печать акта приёма-передачи'}
                   </Button>
-                  
+
                   {/* 3. Акт выполненных работ */}
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full border-purple-500 text-purple-700 hover:bg-purple-100 pointer-events-auto"
+                    className="w-full border-purple-500 text-purple-700 hover:bg-purple-100"
                     onClick={handleGenerateServiceAct}
                     disabled={isGeneratingContract || isGeneratingServiceAct || !contractClient.fullName}
                   >
                     {isGeneratingServiceAct ? '⏳ Генерация...' : '📝 Печать акта выполненных работ'}
                   </Button>
-                  
+
                   <p className="text-xs text-muted-foreground text-center">
-                    Документы скачаются в формате Word (.docx)
+                    Документы откроются в новой вкладке (Word на ПК, HTML на мобильном)
                   </p>
                 </div>
               </div>
