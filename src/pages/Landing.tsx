@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { ArrowUpRight, Wallet, FileText, Smartphone } from 'lucide-react'
+import { ArrowUpRight, Wallet, FileText, Smartphone, PieChart, RefreshCw, type LucideIcon } from 'lucide-react'
 import { LandingHeader } from '@/components/landing/Header'
 import { LandingFooter } from '@/components/landing/Footer'
 import { FeatureBlock } from '@/components/landing/FeatureBlock'
@@ -12,6 +12,22 @@ const TRIGGERS = [
   { icon: FileText, label: 'Договоры в один клик' },
   { icon: Smartphone, label: 'Работает с телефона' },
 ]
+
+interface BulletProps {
+  icon: LucideIcon
+  children: React.ReactNode
+}
+
+function Bullet({ icon: Icon, children }: BulletProps) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#ffdb33]/40 bg-[#ffdb33]/20">
+        <Icon className="h-4 w-4 text-[#111]" strokeWidth={1.8} />
+      </span>
+      <p className="flex-1 pt-1.5 text-[15px] leading-[1.6] text-[#2F3437]">{children}</p>
+    </div>
+  )
+}
 
 export function Landing() {
   return (
@@ -113,8 +129,8 @@ export function Landing() {
           imagePosition="right"
           footer={
             <>
-              <p>• Круговая диаграмма расходов — видно, куда уходят деньги: топливо, ТО, штрафы, мойка.</p>
-              <p>• Обновляется сама при каждой новой записи, пересчитывать вручную не нужно.</p>
+              <Bullet icon={PieChart}>Круговая диаграмма расходов — видно, куда уходят деньги: топливо, ТО, штрафы, мойка.</Bullet>
+              <Bullet icon={RefreshCw}>Обновляется сама при каждой новой записи, пересчитывать вручную не нужно.</Bullet>
             </>
           }
         />
