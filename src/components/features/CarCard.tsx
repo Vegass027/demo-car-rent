@@ -93,11 +93,11 @@ export function CarCard({ car, compact = false }: CarCardProps) {
 
         {/* Контент с блоком окупаемости справа */}
         <div className="p-4">
-          <div className="flex gap-4 items-start">
+          <div className="flex gap-3 sm:gap-4 items-start min-w-0">
             {/* Левая часть - основная информация */}
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center min-w-0 flex-1">
               {/* Верхняя секция: статус, название, госномер */}
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center min-w-0 w-full">
                 {/* Строка 1: Статус авто */}
                 <div className="mb-2">
                   <StatusBadge status={car.status} size="sm" />
@@ -150,10 +150,10 @@ export function CarCard({ car, compact = false }: CarCardProps) {
             </div>
 
             {/* Разделитель */}
-            <div className="w-px bg-border ml-8" />
+            <div className="hidden md:block w-px bg-border" />
 
             {/* Правая часть - блок окупаемости (вертикально) */}
-            <div className="flex-1 flex flex-col items-center">
+            <div className="flex-1 flex flex-col items-center min-w-0">
               {/* Строка 1: Бейдж "Окупаемость" - на одной линии со статусом */}
               <div className="mb-2">
                 <Badge
@@ -175,15 +175,15 @@ export function CarCard({ car, compact = false }: CarCardProps) {
               </span>
               
               {/* Строка 3: Прогресс бар с процентом и суммой окупленного */}
-              <div className="relative w-4/5 mb-3">
+              <div className="relative w-full mb-3">
                 <Progress
                   value={car.roiPercent ?? 0}
-                  className="h-5"
+                  className="h-4"
                 />
-                <div className="absolute inset-0 flex items-center justify-center text-xs font-medium gap-1">
-                  <span>{car.roiPercent !== undefined ? `${car.roiPercent}%` : '—'}</span>
+                <div className="absolute inset-0 flex items-center justify-center text-[10px] sm:text-xs font-medium gap-1 px-1">
+                  <span className="shrink-0">{car.roiPercent !== undefined ? `${car.roiPercent}%` : '—'}</span>
                   {car.netProfit !== undefined && car.netProfit > 0 && (
-                    <span className="text-green-600">| {formatMoney(car.netProfit)}</span>
+                    <span className="text-green-600 truncate min-w-0">| {formatMoney(car.netProfit)}</span>
                   )}
                 </div>
               </div>
@@ -193,9 +193,9 @@ export function CarCard({ car, compact = false }: CarCardProps) {
                 <Badge
                   variant="outline"
                   size="sm"
-                  className="text-xs border-border"
+                  className="text-xs border-border max-w-full"
                 >
-                  {formatMoney(car.dailyPrice)}/сутки
+                  <span className="truncate">{formatMoney(car.dailyPrice)}/сутки</span>
                 </Badge>
               )}
             </div>
