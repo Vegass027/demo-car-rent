@@ -3344,24 +3344,34 @@ function BuyoutContractCard({ contract, companySettings, cars, onOpenPayment }: 
               const isFullyPaid = paidForMonth >= monthlyDue && monthlyDue > 0
               const isPartiallyPaid = !isFullyPaid && paidForMonth > 0
 
-              let bgColor = 'bg-gray-200 text-gray-500' // будущий / без оплаты
+              // Пропорция частичной оплаты для горизонтальной заливки
+              const paidPercent = monthlyDue > 0
+                ? Math.min(100, Math.round((paidForMonth / monthlyDue) * 100))
+                : 0
+
+              let bgStyle: React.CSSProperties = {}
+              let baseClass = 'bg-gray-200 text-gray-700'
               let titleExtra = 'Ожидается'
               if (isFullyPaid) {
-                bgColor = 'bg-green-500 text-white' // полностью оплачен
+                baseClass = 'bg-green-500 text-white' // полностью оплачен
                 titleExtra = `Оплачен (${formatMoney(paidForMonth)})`
               } else if (isPartiallyPaid) {
-                // Полупрозрачный зелёный — частичная оплата
-                bgColor = 'bg-green-300 text-green-900'
-                titleExtra = `Частично: ${formatMoney(paidForMonth)} из ${formatMoney(monthlyDue)}`
+                // Частичная оплата — горизонтальная заливка: зелёный слева на %paid, серый справа
+                bgStyle = {
+                  background: `linear-gradient(to right, #22c55e 0%, #22c55e ${paidPercent}%, #e5e7eb ${paidPercent}%, #e5e7eb 100%)`,
+                  color: paidPercent >= 50 ? 'white' : '#374151',
+                }
+                titleExtra = `Частично: ${formatMoney(paidForMonth)} из ${formatMoney(monthlyDue)} (${paidPercent}%)`
               } else if (isOverdue) {
-                bgColor = 'bg-red-400 text-white' // просрочен
+                baseClass = 'bg-red-400 text-white' // просрочен
                 titleExtra = 'Просрочен'
               }
 
               return (
                 <div
                   key={i}
-                  className={`px-2 py-1 rounded text-xs font-medium ${bgColor}`}
+                  className={`px-2 py-1 rounded text-xs font-medium ${baseClass}`}
+                  style={bgStyle}
                   title={`${monthStr} ${monthDate.getFullYear()} — ${titleExtra}`}
                 >
                   {monthStr}
