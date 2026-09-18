@@ -85,23 +85,23 @@ export function FeatureBlock({
           </div>
         </motion.div>
 
-        {/* Карточка с description + footer (если нужно) */}
+        {/* Карточка с description + footer (если нужно) — ровно по размеру текста */}
         {(descriptionInCard || footer) && (
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.6, ease: EASE, delay: 0.1 }}
-            className="md:col-span-4"
+            className="md:col-span-4 self-start"
           >
-            <div className="flex flex-col gap-3 rounded-2xl border border-black/[0.06] bg-white p-6 shadow-[0_2px_16px_rgba(0,0,0,0.04)] md:p-7">
+            <div className="flex flex-col gap-3 rounded-2xl border border-black/[0.06] bg-white p-5 shadow-[0_2px_16px_rgba(0,0,0,0.04)] md:p-6">
               {descriptionInCard && (
                 <p className="text-[15px] leading-[1.6] text-[#2F3437] md:text-base">
                   {description}
                 </p>
               )}
               {footer && (
-                <div className={descriptionInCard ? 'mt-2 flex flex-col gap-2 text-[14px] leading-[1.6] text-[#2F3437]' : 'flex flex-col gap-2 text-[14px] leading-[1.6] text-[#2F3437]'}>
+                <div className="flex flex-col gap-2 text-[14px] leading-[1.6] text-[#2F3437]">
                   {footer}
                 </div>
               )}

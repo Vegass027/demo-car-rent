@@ -16,8 +16,8 @@ export function PWAStatusBar() {
   const { isOnline, updateAvailable, updateApp } = usePWA()
   const location = useLocation()
 
-  // Не показываем на странице логина - чтобы не создавать прокрутку и не перекрывать фон
-  if (location.pathname === '/login') {
+  // Не показываем на публичных страницах (лендинг, логин) — чтобы не перекрывать хедер
+  if (location.pathname === '/login' || location.pathname === '/landing') {
     return null
   }
 
