@@ -1388,13 +1388,15 @@ function PayoutHistory({ withdrawals }: PayoutHistoryProps) {
                   </div>
 
                   {/* Расчёт */}
-                  <div className="text-muted-foreground">
-                    Расчёт: Прибыль{' '}
-                    <span className="font-medium text-foreground">{formatMoney(payout.netProfit)}</span>
-                    {' − '}
-                    <span className="font-medium text-foreground">{payout.percent}%</span>
-                    {' = '}
-                    <span className="font-bold text-green-600 text-base">
+                  <div className="flex items-center gap-2 whitespace-nowrap overflow-hidden text-ellipsis">
+                    <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
+                    <span className="font-medium text-foreground tabular-nums">
+                      {formatMoney(payout.netProfit)}
+                    </span>
+                    <span className="text-muted-foreground">−</span>
+                    <span className="font-medium text-foreground tabular-nums">{payout.percent}%</span>
+                    <span className="text-muted-foreground">=</span>
+                    <span className="font-bold text-green-600 text-base tabular-nums">
                       {formatMoney(payout.amount)}
                     </span>
                   </div>
