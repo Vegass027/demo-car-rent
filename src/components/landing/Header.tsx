@@ -28,6 +28,24 @@ export function LandingHeader() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // Telegram WebApp: фиксируем CSS-переменную с высотой стабильного viewport,
+  // иначе position:sticky ломается при изменении viewport (появление/скрытие клавиатуры).
+  useEffect(() => {
+    const tg = window.Telegram?.WebApp
+    if (!tg) return
+    const update = () => {
+      const stable = tg.viewportStableHeight || window.innerHeight
+      document.documentElement.style.setProperty('--tg-viewport-stable-height', `${stable}px`)
+    }
+    update()
+    tg.onEvent?.('viewportChanged', update)
+    tg.onEvent?.('contentSafeAreaChanged', update)
+    return () => {
+      tg.offEvent?.('viewportChanged', update)
+      tg.offEvent?.('contentSafeAreaChanged', update)
+    }
+  }, [])
+
   const handleAnchorClick = (id: string) => {
     setMobileOpen(false)
     const el = document.getElementById(id)
@@ -39,12 +57,12 @@ export function LandingHeader() {
   return (
     <header
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-[background-color,border-color] duration-300',
+        'sticky top-0 left-0 right-0 z-50 transition-[background-color,border-color] duration-300',
         scrolled
           ? 'bg-white/95 border-b border-black/[0.08]'
           : 'bg-transparent border-b border-transparent'
       )}
-      style={{ transform: 'translateZ(0)' }}
+      style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0px)' }}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-8">
         {/* Логотип — только иконка */}
