@@ -26,6 +26,13 @@ import { useCompanySettings, useUpdateCompanySettings } from '@/hooks/useCompany
 import { formatMoney, formatDate } from '@/utils/format'
 import { calcBuyoutTotalSum, calcBuyoutProfitShare } from '@/utils/calc'
 import { generateContractDocument, generateSimpleRentalContractDocument, generateServiceActDocument, generateBuyoutContractDocument, generateContractNumber } from '@/utils/contractGenerator'
+import { generateContractDocumentHTML, generateServiceActDocumentHTML, generateBuyoutContractDocumentHTML, generateSimpleRentalContractDocumentHTML, openHtmlDocument } from '@/utils/contractGeneratorHTML'
+
+// На мобильных открываем HTML (DOCX криво рендерится в Safari)
+function isMobileDevice(): boolean {
+  if (typeof window === 'undefined') return false
+  return window.innerWidth < 768 || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+}
 import { MONTHS_RU } from '@/constants'
 import { Loader } from '@/components/retroui/Loader'
 import { ChangePasswordModal } from '@/components/features/ChangePasswordModal'
@@ -2291,7 +2298,7 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
     
     setIsGeneratingContract(true)
     try {
-      await generateContractDocument({
+      const data = {
         // Данные авто
         carBrand: car.brand || '',
         carModel: car.model || '',
@@ -2300,7 +2307,7 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
         carLicensePlate: car.licensePlate,
         carVin: car.vin || '',
         carPrice: car.purchasePrice || 0,
-        
+
         // Данные клиента
         client: {
           fullName: client.fullName,
@@ -2312,7 +2319,7 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
           passportIssueDate: client.passportIssueDate || '',
           registrationAddress: client.registrationAddress || '',
         },
-        
+
         // Данные аренды
         contractNumber: generateContractNumber(),
         contractDate: record.recordDate,
@@ -2321,7 +2328,7 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
         dailyPrice: dailyPrice,
         totalAmount: record.rentalAmount,
         deposit: record.deposit || 0,
-        
+
         // Данные владельца
         owner: {
           fullName: companySettings.ownerFullName || '',
@@ -2333,7 +2340,13 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
           registrationAddress: companySettings.ownerRegistrationAddress || '',
           phone: companySettings.ownerPhone || '',
         },
-      })
+      }
+
+      if (isMobileDevice()) {
+        openHtmlDocument(generateContractDocumentHTML(data))
+      } else {
+        await generateContractDocument(data)
+      }
     } catch (error) {
       console.error('Ошибка генерации акта:', error)
       alert('Ошибка при генерации акта')
@@ -2366,7 +2379,7 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
     
     setIsGeneratingFullContract(true)
     try {
-      await generateSimpleRentalContractDocument({
+      const data = {
         carBrand: car.brand || '',
         carModel: car.model || '',
         carYear: car.year,
@@ -2405,7 +2418,13 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
           registrationAddress: companySettings.ownerRegistrationAddress || '',
           phone: companySettings.ownerPhone || '',
         },
-      })
+      }
+
+      if (isMobileDevice()) {
+        openHtmlDocument(generateSimpleRentalContractDocumentHTML(data))
+      } else {
+        await generateSimpleRentalContractDocument(data)
+      }
     } catch (error) {
       console.error('Ошибка генерации договора:', error)
       alert('Ошибка при генерации договора')
@@ -2433,38 +2452,44 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
     
     setIsGeneratingServiceAct(true)
     try {
-      await generateServiceActDocument({
+      const data = {
         // Номер акта
         actNumber: generateContractNumber().replace('ККР-', 'А-'),
         actDate: record.recordDate,
-        
+
         // Данные договора
         contractNumber: generateContractNumber(),
         contractDate: record.recordDate,
-        
+
         // Исполнитель (владелец)
         executor: {
           fullName: companySettings.ownerFullName || '',
           phone: companySettings.ownerPhone || '',
         },
-        
+
         // Заказчик (клиент)
         customer: {
           fullName: client.fullName,
           phone: client.phone || undefined,
         },
-        
+
         // Данные аренды
         startDate: record.startDate || record.recordDate,
         endDate: record.endDate || record.recordDate,
         dailyPrice: dailyPrice,
         totalAmount: record.rentalAmount,
         rentalDays: daysCount,
-        
+
         // Данные авто
         carName: car.name,
         carLicensePlate: car.licensePlate,
-      })
+      }
+
+      if (isMobileDevice()) {
+        openHtmlDocument(generateServiceActDocumentHTML(data))
+      } else {
+        await generateServiceActDocument(data)
+      }
     } catch (error) {
       console.error('Ошибка генерации акта:', error)
       alert('Ошибка при генерации акта')
@@ -2498,7 +2523,7 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
     setIsGeneratingBuyout(true)
     try {
       const bd = record.buyoutData
-      await generateBuyoutContractDocument({
+      const data = {
         carBrand: car.brand || '',
         carModel: car.model || '',
         carYear: car.year,
@@ -2542,7 +2567,13 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
         deliveryAddress: bd.deliveryAddress || '',
         startTime: bd.startTime || '',
         relatives: bd.relatives || [],
-      })
+      }
+
+      if (isMobileDevice()) {
+        openHtmlDocument(generateBuyoutContractDocumentHTML(data))
+      } else {
+        await generateBuyoutContractDocument(data)
+      }
     } catch (error) {
       console.error('Ошибка генерации договора выкупа:', error)
       alert('Ошибка при генерации договора выкупа')
@@ -2956,7 +2987,7 @@ function BuyoutContractCard({ contract, companySettings, cars, onOpenPayment }: 
             driverLicenseNumber: bd.driverLicenseNumber || '',
           }
 
-      await generateBuyoutContractDocument({
+      const data = {
         carBrand: car.brand || '',
         carModel: car.model || '',
         carYear: car.year,
@@ -2989,7 +3020,13 @@ function BuyoutContractCard({ contract, companySettings, cars, onOpenPayment }: 
         deliveryAddress: bd.deliveryAddress || '',
         startTime: bd.startTime || '',
         relatives: bd.relatives || [],
-      })
+      }
+
+      if (isMobileDevice()) {
+        openHtmlDocument(generateBuyoutContractDocumentHTML(data))
+      } else {
+        await generateBuyoutContractDocument(data)
+      }
     } catch (error) {
       alert('Ошибка генерации договора')
     } finally {
