@@ -714,6 +714,7 @@ export async function createBuyoutPayment(params: {
 
   const dbRecord: Record<string, unknown> = {
     car_id: params.carId,
+    client_id: contract.clientId || null,
     record_date: params.paymentDate,
     rental_amount: params.amount,
     service_cost: 0,
