@@ -1082,8 +1082,10 @@ export function CarDetail() {
                               {new Date(record.recordDate).toLocaleDateString('ru-RU')}
                             </span>
                             <span className="text-sm truncate">
-                              {record.expenseCategory?.name || 'Подготовка'}
-                              {comment && ` — ${comment}`}
+                              {record.expenseCategory?.name === 'Прочее'
+                                ? (comment || 'Расход')
+                                : `${record.expenseCategory?.name || 'Подготовка'}${comment ? ` — ${comment}` : ''}`
+                              }
                             </span>
                           </div>
                           <div className="flex items-center gap-1 flex-shrink-0">
