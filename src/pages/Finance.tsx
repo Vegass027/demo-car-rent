@@ -8,7 +8,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { Car, Banknote, History, Trash2, Building2, User, CreditCard, FileText, Users, Search, TrendingUp, CalendarDays, X, Shield, Pencil, Check, MessageCircle, Copy, KeyRound, ChevronDown, Wrench, Eye, EyeOff } from 'lucide-react'
+import { Car, Banknote, History, Trash2, Building2, User, CreditCard, FileText, Users, Search, TrendingUp, CalendarDays, X, Shield, Pencil, Check, MessageCircle, Copy, KeyRound, ChevronDown, Wrench, Eye, EyeOff, Wallet, Layers } from 'lucide-react'
+import { Dialog } from '@/components/retroui/Dialog'
 import { Card } from '@/components/retroui/Card'
 import { CarComparisonTable } from '@/components/features/CarComparisonTable'
 import { Button } from '@/components/retroui/Button'
@@ -1219,20 +1220,18 @@ interface PayoutHistoryProps {
 function PayoutHistory({ withdrawals }: PayoutHistoryProps) {
   const { data: cars } = useCars()
   const deleteSalary = useDeleteSalaryWithdrawal()
-  
+
   // Фильтр по машине
   const [filterCarId, setFilterCarId] = useState<string>('all')
-  
-  // Обработчик удаления
-  const handleDelete = async (id: string, index: number) => {
-    if (!confirm(`Удалить выплату #${index}?`)) return
-    try {
-      await deleteSalary.mutateAsync(id)
-    } catch (error) {
-      console.error('Ошибка удаления:', error)
-    }
-  }
-  
+
+  // Состояние модалки подтверждения удаления
+  const [confirmDelete, setConfirmDelete] = useState<{
+    id: string
+    index: number
+    amount: number
+    date: string
+  } | null>(null)
+
   if (!withdrawals || withdrawals.length === 0) {
     return (
       <div className="text-center py-8">
@@ -1246,16 +1245,29 @@ function PayoutHistory({ withdrawals }: PayoutHistoryProps) {
 
   // Фильтруем только выплаты с месяцем (новый формат)
   const payouts = withdrawals.filter(w => w.month)
-  
-  // Фильтруем по машине
-  const filteredPayouts = filterCarId === 'all' 
-    ? payouts 
-    : payouts.filter(w => w.carId === filterCarId)
 
-  // Получить название машины по carId
-  const getCarName = (carId: string | null) => {
+  // Фильтруем по машине
+  const filteredPayouts =
+    filterCarId === 'all'
+      ? payouts
+      : filterCarId === '__global__'
+        ? payouts.filter(w => w.carId === null)
+        : payouts.filter(w => w.carId === filterCarId)
+
+  // Получить информацию о машине по carId
+  const getCar = (carId: string | null) => {
     if (!carId || !cars) return null
-    return cars.find(c => c.id === carId)?.name || null
+    return cars.find(c => c.id === carId) || null
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!confirmDelete) return
+    try {
+      await deleteSalary.mutateAsync(confirmDelete.id)
+      setConfirmDelete(null)
+    } catch (error) {
+      console.error('Ошибка удаления:', error)
+    }
   }
 
   return (
@@ -1271,6 +1283,12 @@ function PayoutHistory({ withdrawals }: PayoutHistoryProps) {
           </Select.Trigger>
           <Select.Content position="popper" side="bottom">
             <Select.Item value="all">Все машины</Select.Item>
+            <Select.Item value="__global__">
+              <span className="flex items-center gap-2">
+                <Layers className="w-3 h-3" />
+                Только общие (за все машины)
+              </span>
+            </Select.Item>
             {cars?.map((car) => (
               <Select.Item key={car.id} value={car.id}>
                 <div className="flex items-center gap-2">
@@ -1300,41 +1318,92 @@ function PayoutHistory({ withdrawals }: PayoutHistoryProps) {
         <div className="space-y-2">
           {filteredPayouts.map((payout, index) => {
             const remaining = payout.netProfit - payout.amount
-            const carName = getCarName(payout.carId)
+            const car = getCar(payout.carId)
+            const isGlobal = payout.carId === null
+
             return (
               <div
                 key={payout.id}
-                className="p-3 bg-muted/30 rounded-lg flex items-center justify-between"
+                className={`bg-white border rounded-lg overflow-hidden ${
+                  isGlobal ? 'border-purple-200' : 'border-border'
+                }`}
               >
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-bold text-orange-600">
-                    ВЫПЛАТА {index + 1}
-                  </span>
-                  {carName && (
-                    <span className="text-muted-foreground">({carName})</span>
-                  )}
-                  <span className="font-medium">
-                    {formatMoney(payout.netProfit)} - {payout.percent}% =
-                  </span>
-                  <span className="font-bold text-green-600">
-                    {formatMoney(payout.amount)}
-                  </span>
-                  <span className="text-muted-foreground">|</span>
-                  <span className="text-orange-600">
-                    ОСТАТОК ({formatMoney(remaining)})
-                  </span>
+                {/* Ряд 1: Шапка — тип выплаты + дата + удалить */}
+                <div
+                  className={`flex items-center justify-between gap-2 px-3 py-2 border-b ${
+                    isGlobal
+                      ? 'bg-purple-50 border-purple-100'
+                      : 'bg-green-50 border-green-100'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span
+                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
+                        isGlobal
+                          ? 'bg-purple-200 text-purple-800'
+                          : 'bg-green-200 text-green-800'
+                      }`}
+                    >
+                      <Wallet className="h-3.5 w-3.5" />
+                    </span>
+                    <span className="font-bold text-sm">ВЫПЛАТА #{index + 1}</span>
+                    {isGlobal ? (
+                      <span className="px-2 py-0.5 rounded-full bg-purple-200 text-purple-800 text-xs font-medium shrink-0">
+                        За все машины
+                      </span>
+                    ) : car ? (
+                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground truncate">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{ backgroundColor: car.colorTag }}
+                        />
+                        <span className="truncate">{car.name} ({car.licensePlate})</span>
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs text-muted-foreground tabular-nums">
+                      {new Date(payout.withdrawalDate).toLocaleDateString('ru-RU')}
+                    </span>
+                    <button
+                      onClick={() =>
+                        setConfirmDelete({
+                          id: payout.id,
+                          index: index + 1,
+                          amount: payout.amount,
+                          date: new Date(payout.withdrawalDate).toLocaleDateString('ru-RU'),
+                        })
+                      }
+                      className="p-1 text-muted-foreground hover:text-red-600 transition-colors"
+                      title="Удалить выплату"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground hidden sm:inline">
-                    {new Date(payout.withdrawalDate).toLocaleDateString('ru-RU')}
-                  </span>
-                  <button
-                    onClick={() => handleDelete(payout.id, index + 1)}
-                    className="p-1 text-muted-foreground hover:text-red-600 transition-colors"
-                    title="Удалить выплату"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+
+                {/* Ряд 2: Детали расчёта */}
+                <div className="px-3 py-2.5 text-sm">
+                  <div className="text-muted-foreground">
+                    Прибыль{' '}
+                    <span className="font-medium text-foreground">{formatMoney(payout.netProfit)}</span>
+                    {' − '}
+                    <span className="font-medium text-foreground">{payout.percent}%</span>
+                    {' = '}
+                    <span className="font-bold text-green-600 text-base">
+                      {formatMoney(payout.amount)}
+                    </span>
+                  </div>
+                  <div className="mt-1.5 text-xs">
+                    <span className="text-muted-foreground">Остаток: </span>
+                    <span
+                      className={`font-semibold tabular-nums ${
+                        remaining > 0 ? 'text-orange-600' : 'text-muted-foreground'
+                      }`}
+                    >
+                      {formatMoney(remaining)}
+                    </span>
+                  </div>
                 </div>
               </div>
             )
@@ -1345,6 +1414,46 @@ function PayoutHistory({ withdrawals }: PayoutHistoryProps) {
           Нет выплат за выбранный период
         </p>
       )}
+
+      {/* Модалка подтверждения удаления */}
+      <Dialog
+        open={!!confirmDelete}
+        onOpenChange={(open) => !open && setConfirmDelete(null)}
+      >
+        <Dialog.Content className="max-w-sm">
+          <Dialog.Header className="text-center">Удалить выплату?</Dialog.Header>
+          <div className="space-y-3 px-4 py-3 text-sm">
+            <p className="text-center text-muted-foreground">
+              Выплата #{confirmDelete?.index} на сумму{' '}
+              <span className="font-bold text-foreground">
+                {confirmDelete && formatMoney(confirmDelete.amount)}
+              </span>{' '}
+              от <span className="font-medium text-foreground">{confirmDelete?.date}</span> будет удалена.
+            </p>
+            <p className="text-xs text-muted-foreground text-center border-t border-border pt-3">
+              Статистика автопарка (доходы, остатки, ROI) пересчитается автоматически.
+              Это не отменяет саму выплату задним числом.
+            </p>
+          </div>
+          <div className="flex gap-2 p-4 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setConfirmDelete(null)}
+              className="flex-1"
+              disabled={deleteSalary.isPending}
+            >
+              Отмена
+            </Button>
+            <Button
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+              onClick={handleConfirmDelete}
+              disabled={deleteSalary.isPending}
+            >
+              {deleteSalary.isPending ? 'Удаление...' : 'Удалить'}
+            </Button>
+          </div>
+        </Dialog.Content>
+      </Dialog>
     </div>
   )
 }

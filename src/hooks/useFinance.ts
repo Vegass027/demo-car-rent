@@ -130,12 +130,11 @@ export function useCreateSalaryWithdrawal() {
 
 
   return useMutation({
-    mutationFn: ({ data, userId, carName }: { data: SalaryFormData; userId?: string; carName?: string }) => 
+    mutationFn: ({ data, userId, carName }: { data: SalaryFormData; userId?: string; carName?: string }) =>
       createSalaryWithdrawal(data, userId, carName),
     onSuccess: () => {
-      // Инвалидируем кассу и выводы зарплаты
-      queryClient.invalidateQueries({ queryKey: financeKeys.cashFlow() })
-      queryClient.invalidateQueries({ queryKey: financeKeys.salary() })
+      // Широкая инвалидация — все финансовые запросы пересчитываются с учётом новой выплаты
+      queryClient.invalidateQueries({ queryKey: financeKeys.all })
     },
   })
 }
@@ -147,8 +146,9 @@ export function useDeleteSalaryWithdrawal() {
   return useMutation({
     mutationFn: (id: string) => deleteSalaryWithdrawal(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: financeKeys.cashFlow() })
-      queryClient.invalidateQueries({ queryKey: financeKeys.salary() })
+      // Широкая инвалидация — все финансовые запросы пересчитываются с учётом удалённой выплаты:
+      // cashFlow, salary, monthlyStats, carStats, monthlyProfit, monthSummary, allTimeStats и т.д.
+      queryClient.invalidateQueries({ queryKey: financeKeys.all })
     },
   })
 }
