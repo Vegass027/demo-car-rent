@@ -5,7 +5,7 @@
 
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Calendar, ClipboardList, ChevronLeft, ChevronRight, Plus, ChevronDown, Car, Save, Check, Wrench, X, Wallet, Receipt, Trash2, Phone, Clock, FileText, Copy, Shield } from 'lucide-react'
+import { ArrowLeft, Calendar, ClipboardList, ChevronLeft, ChevronRight, Plus, ChevronDown, Car, Save, Check, Wrench, X, Wallet, Receipt, Trash2, Phone, Clock, Copy, Shield, Download, Eye } from 'lucide-react'
 import { Dialog } from '@/components/retroui/Dialog'
 import { Card } from '@/components/retroui/Card'
 import { Button } from '@/components/retroui/Button'
@@ -24,6 +24,7 @@ import { formatMoney } from '@/utils/format'
 import { calcBuyoutProfitShare } from '@/utils/calc'
 import { CAR_STATUS_LABELS, MONTHS_RU, PREPARATION_CATEGORY_NAMES, PREPARATION_NOTES } from '@/constants'
 import { generateContractDocument, generateSimpleRentalContractDocument, generateServiceActDocument, generateContractNumber } from '@/utils/contractGenerator'
+import { generateContractDocumentHTML, generateSimpleRentalContractDocumentHTML, generateServiceActDocumentHTML, openHtmlDocument } from '@/utils/contractGeneratorHTML'
 import { getClient, clientToContractData } from '@/api/clients'
 import { Loader } from '@/components/retroui/Loader'
 import type { CarStatus, ExpenseCategory, CarRecord, ContractClientData } from '@/types'
@@ -498,23 +499,23 @@ export function CarDetail() {
       alert('Нет данных клиента для генерации документа')
       return
     }
-    
+
     if (!companySettings?.ownerFullName) {
       alert('В настройках не указаны данные собственника. Заполните их в разделе "Бухгалтерия"')
       return
     }
-    
+
     const docKey = `${record.id}-service-act`
     setGeneratingDocs(prev => ({ ...prev, [docKey]: true }))
-    
+
     try {
       // Загружаем данные клиента
       const clientData = await getClientDataFromRecord(record)
-      
+
       const days = record.startDate && record.endDate
         ? Math.ceil((new Date(record.endDate).getTime() - new Date(record.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
         : 1
-      
+
       await generateServiceActDocument({
         actNumber: generateContractNumber().replace('ККР-', 'А-'),
         actDate: record.recordDate,
@@ -541,6 +542,131 @@ export function CarDetail() {
       alert('Ошибка при генерации акта')
     } finally {
       setGeneratingDocs(prev => ({ ...prev, [docKey]: false }))
+    }
+  }
+
+  // HTML-версии (для просмотра на мобильных — открываются в новой вкладке)
+  const handleViewContractHTML = async (record: CarRecord) => {
+    if (!car || !record.renterName) {
+      alert('Нет данных клиента для генерации документа')
+      return
+    }
+    if (!companySettings?.ownerFullName) {
+      alert('В настройках не указаны данные собственника')
+      return
+    }
+    try {
+      const clientData = await getClientDataFromRecord(record)
+      const days = record.startDate && record.endDate
+        ? Math.ceil((new Date(record.endDate).getTime() - new Date(record.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
+        : 1
+      const html = generateContractDocumentHTML({
+        carBrand: car.brand || '',
+        carModel: car.model || '',
+        carYear: car.year,
+        carColor: car.color || '',
+        carLicensePlate: car.licensePlate,
+        carVin: car.vin || '',
+        carPrice: car.purchasePrice || 0,
+        client: clientData,
+        contractNumber: generateContractNumber(),
+        contractDate: record.recordDate,
+        startDate: record.startDate || record.recordDate,
+        endDate: record.endDate || record.recordDate,
+        dailyPrice: record.rentalAmount / days,
+        totalAmount: record.rentalAmount,
+        deposit: record.deposit || 0,
+        owner: {
+          fullName: companySettings.ownerFullName || '',
+          birthDate: companySettings.ownerBirthDate || '',
+          passportSeries: companySettings.ownerPassportSeries || '',
+          passportNumber: companySettings.ownerPassportNumber || '',
+          passportIssuedBy: companySettings.ownerPassportIssuedBy || '',
+          passportIssueDate: companySettings.ownerPassportIssueDate || '',
+          registrationAddress: companySettings.ownerRegistrationAddress || '',
+          phone: companySettings.ownerPhone || '',
+        },
+      })
+      openHtmlDocument(html)
+    } catch (error) {
+      console.error('Ошибка генерации HTML:', error)
+      alert('Ошибка при генерации документа')
+    }
+  }
+
+  const handleViewFullContractHTML = async (record: CarRecord) => {
+    if (!car || !record.renterName) {
+      alert('Нет данных клиента для генерации документа')
+      return
+    }
+    if (!companySettings?.ownerFullName) {
+      alert('В настройках не указаны данные собственника')
+      return
+    }
+    try {
+      const clientData = await getClientDataFromRecord(record)
+      const days = record.startDate && record.endDate
+        ? Math.ceil((new Date(record.endDate).getTime() - new Date(record.startDate).getTime()) / (1000 * 60 * 60 * 24)) + 1
+        : 1
+      const html = generateSimpleRentalContractDocumentHTML({
+        carBrand: car.brand || '',
+        carModel: car.model || '',
+        carYear: car.year,
+        carColor: car.color || '',
+        carLicensePlate: car.licensePlate,
+        carVin: car.vin || '',
+        carPrice: car.purchasePrice || 0,
+        client: clientData,
+        contractNumber: generateContractNumber(),
+        contractDate: record.recordDate,
+        startDate: record.startDate || record.recordDate,
+        endDate: record.endDate || record.recordDate,
+        rentalDays: days,
+        dailyPrice: record.rentalAmount / days,
+        totalAmount: record.rentalAmount,
+        deposit: record.deposit || 0,
+        owner: {
+          fullName: companySettings.ownerFullName || '',
+          birthDate: companySettings.ownerBirthDate || '',
+          passportSeries: companySettings.ownerPassportSeries || '',
+          passportNumber: companySettings.ownerPassportNumber || '',
+          passportIssuedBy: companySettings.ownerPassportIssuedBy || '',
+          passportIssueDate: companySettings.ownerPassportIssueDate || '',
+          registrationAddress: companySettings.ownerRegistrationAddress || '',
+          phone: companySettings.ownerPhone || '',
+        },
+      })
+      openHtmlDocument(html)
+    } catch (error) {
+      console.error('Ошибка генерации HTML:', error)
+      alert('Ошибка при генерации документа')
+    }
+  }
+
+  const handleViewServiceActHTML = async (record: CarRecord) => {
+    if (!car || !record.renterName) {
+      alert('Нет данных клиента для генерации документа')
+      return
+    }
+    if (!companySettings?.ownerFullName) {
+      alert('В настройках не указаны данные собственника')
+      return
+    }
+    try {
+      const html = generateServiceActDocumentHTML({
+        contractNumber: generateContractNumber(),
+        contractDate: record.recordDate,
+        carName: car.name,
+        carLicensePlate: car.licensePlate,
+        carVin: car.vin || '',
+        ownerFullName: companySettings.ownerFullName || '',
+        works: [{ name: 'Обслуживание', price: record.otherCost || 0 }],
+        totalAmount: record.otherCost || 0,
+      })
+      openHtmlDocument(html)
+    } catch (error) {
+      console.error('Ошибка генерации HTML:', error)
+      alert('Ошибка при генерации документа')
     }
   }
 
@@ -1311,30 +1437,63 @@ export function CarDetail() {
                           {/* Кнопки документов - отцентрированы на мобильных */}
                           {record.renterName && (
                             <div className="flex flex-col items-center sm:items-start gap-1 mt-2 pt-2 border-t border-border">
-                              <button
-                                onClick={() => handleGenerateFullContractFromHistory(record)}
-                                disabled={generatingDocs[`${record.id}-full-contract`]}
-                                className="flex items-center gap-2 px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
-                              >
-                                <FileText className="w-3 h-3" />
-                                {generatingDocs[`${record.id}-full-contract`] ? 'Генерация...' : 'Договор аренды'}
-                              </button>
-                              <button
-                                onClick={() => handleGenerateContractFromHistory(record)}
-                                disabled={generatingDocs[`${record.id}-contract`]}
-                                className="flex items-center gap-2 px-2 py-1 text-xs text-green-600 hover:bg-green-50 rounded transition-colors disabled:opacity-50"
-                              >
-                                <FileText className="w-3 h-3" />
-                                {generatingDocs[`${record.id}-contract`] ? 'Генерация...' : 'Акт приёма-передачи'}
-                              </button>
-                              <button
-                                onClick={() => handleGenerateServiceActFromHistory(record)}
-                                disabled={generatingDocs[`${record.id}-service-act`]}
-                                className="flex items-center gap-2 px-2 py-1 text-xs text-purple-600 hover:bg-purple-50 rounded transition-colors disabled:opacity-50"
-                              >
-                                <FileText className="w-3 h-3" />
-                                {generatingDocs[`${record.id}-service-act`] ? 'Генерация...' : 'Акт выполненных работ'}
-                              </button>
+                              {/* Договор аренды */}
+                              <div className="flex flex-wrap items-center gap-2">
+                                <button
+                                  onClick={() => handleGenerateFullContractFromHistory(record)}
+                                  disabled={generatingDocs[`${record.id}-full-contract`]}
+                                  className="flex items-center gap-2 px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50"
+                                >
+                                  <Download className="w-3 h-3" />
+                                  {generatingDocs[`${record.id}-full-contract`] ? 'Генерация...' : 'Скачать DOCX'}
+                                </button>
+                                <button
+                                  onClick={() => handleViewFullContractHTML(record)}
+                                  className="flex items-center gap-2 px-2 py-1 text-xs text-blue-600/70 hover:bg-blue-50 rounded transition-colors"
+                                  title="Открыть для просмотра в браузере (рекомендуется для мобильных)"
+                                >
+                                  <Eye className="w-3 h-3" />
+                                  Открыть
+                                </button>
+                              </div>
+                              {/* Акт приёма-передачи */}
+                              <div className="flex flex-wrap items-center gap-2">
+                                <button
+                                  onClick={() => handleGenerateContractFromHistory(record)}
+                                  disabled={generatingDocs[`${record.id}-contract`]}
+                                  className="flex items-center gap-2 px-2 py-1 text-xs text-green-600 hover:bg-green-50 rounded transition-colors disabled:opacity-50"
+                                >
+                                  <Download className="w-3 h-3" />
+                                  {generatingDocs[`${record.id}-contract`] ? 'Генерация...' : 'Скачать DOCX'}
+                                </button>
+                                <button
+                                  onClick={() => handleViewContractHTML(record)}
+                                  className="flex items-center gap-2 px-2 py-1 text-xs text-green-600/70 hover:bg-green-50 rounded transition-colors"
+                                  title="Открыть для просмотра в браузере (рекомендуется для мобильных)"
+                                >
+                                  <Eye className="w-3 h-3" />
+                                  Открыть
+                                </button>
+                              </div>
+                              {/* Акт выполненных работ */}
+                              <div className="flex flex-wrap items-center gap-2">
+                                <button
+                                  onClick={() => handleGenerateServiceActFromHistory(record)}
+                                  disabled={generatingDocs[`${record.id}-service-act`]}
+                                  className="flex items-center gap-2 px-2 py-1 text-xs text-purple-600 hover:bg-purple-50 rounded transition-colors disabled:opacity-50"
+                                >
+                                  <Download className="w-3 h-3" />
+                                  {generatingDocs[`${record.id}-service-act`] ? 'Генерация...' : 'Скачать DOCX'}
+                                </button>
+                                <button
+                                  onClick={() => handleViewServiceActHTML(record)}
+                                  className="flex items-center gap-2 px-2 py-1 text-xs text-purple-600/70 hover:bg-purple-50 rounded transition-colors"
+                                  title="Открыть для просмотра в браузере (рекомендуется для мобильных)"
+                                >
+                                  <Eye className="w-3 h-3" />
+                                  Открыть
+                                </button>
+                              </div>
                             </div>
                           )}
                          </div>
