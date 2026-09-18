@@ -3319,9 +3319,9 @@ function BuyoutContractCard({ contract, companySettings, cars, onOpenPayment }: 
               const monthDate = new Date(startDate)
               monthDate.setMonth(monthDate.getMonth() + i)
               const monthStr = monthDate.toLocaleDateString('ru-RU', { month: 'short' })
-              
+
               const currentDate = new Date()
-              
+
               // Месяц считается просроченным (красным) только если:
               // - Это строго предыдущий месяц (до текущего) и не оплачен
               // - Текущий месяц НЕ должен быть красным, даже если мы в нём и платёж ещё не поступил
@@ -3330,30 +3330,39 @@ function BuyoutContractCard({ contract, companySettings, cars, onOpenPayment }: 
                 if (monthDate.getFullYear() > currentDate.getFullYear()) return false
                 return monthDate.getMonth() < currentDate.getMonth()
               })()
-              
-              // Определяем, оплачен ли месяц — по дате последнего платежа
-              const lastPaymentDate = payments.length > 0
-                ? new Date(Math.max(...payments.map(p => new Date(p.recordDate + 'T12:00:00').getTime())))
-                : null
-              const isPaid = lastPaymentDate
-                ? (() => {
-                    const monthStart = new Date(monthDate)
-                    return lastPaymentDate >= monthStart
-                  })()
-                : false
-              
-              let bgColor = 'bg-gray-200 text-gray-500' // будущий
-              if (isPaid) {
-                bgColor = 'bg-green-500 text-white' // оплачен
+
+              // Сумма платежей за конкретный (год, месяц) — для частичной оплаты
+              const paidForMonth = payments.reduce((sum, p) => {
+                const pd = new Date(p.recordDate + 'T12:00:00')
+                if (pd.getFullYear() === monthDate.getFullYear() && pd.getMonth() === monthDate.getMonth()) {
+                  return sum + (p.rentalAmount || 0)
+                }
+                return sum
+              }, 0)
+
+              const monthlyDue = bd.monthlyPayment || 0
+              const isFullyPaid = paidForMonth >= monthlyDue && monthlyDue > 0
+              const isPartiallyPaid = !isFullyPaid && paidForMonth > 0
+
+              let bgColor = 'bg-gray-200 text-gray-500' // будущий / без оплаты
+              let titleExtra = 'Ожидается'
+              if (isFullyPaid) {
+                bgColor = 'bg-green-500 text-white' // полностью оплачен
+                titleExtra = `Оплачен (${formatMoney(paidForMonth)})`
+              } else if (isPartiallyPaid) {
+                // Полупрозрачный зелёный — частичная оплата
+                bgColor = 'bg-green-300 text-green-900'
+                titleExtra = `Частично: ${formatMoney(paidForMonth)} из ${formatMoney(monthlyDue)}`
               } else if (isOverdue) {
                 bgColor = 'bg-red-400 text-white' // просрочен
+                titleExtra = 'Просрочен'
               }
-              
+
               return (
                 <div
                   key={i}
                   className={`px-2 py-1 rounded text-xs font-medium ${bgColor}`}
-                  title={`${monthStr} ${monthDate.getFullYear()} — ${isPaid ? 'Оплачен' : isOverdue ? 'Просрочен' : 'Ожидается'}`}
+                  title={`${monthStr} ${monthDate.getFullYear()} — ${titleExtra}`}
                 >
                   {monthStr}
                 </div>
