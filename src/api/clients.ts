@@ -158,27 +158,34 @@ export async function searchClients(query: string): Promise<Client[]> {
   if (isPhoneQuery) {
     // Поиск по телефону
     const digits = normalizePhone(query)
-    if (digits.length < 4) return []  // Минимум4 цифры для поиска
-    
-    // Генерируем варианты поиска: с 8 и с +7 в начале
+    if (digits.length < 4) return []  // Минимум 4 цифры для поиска
+
+    // Генерируем варианты поиска с разными форматами записи в БД
     const searchVariants: string[] = []
-    
-    // Если начинается с 8 — ищем и с +7 (для любого количества цифр)
+
+    // Если начинается с 8 — ищем разные варианты с +7
     if (digits.startsWith('8')) {
-      const withPlus7 = '+7' + digits.slice(1)
-      searchVariants.push(`%${withPlus7}%`)
+      const without8 = digits.slice(1)  // "8900..." → "900..."
+      searchVariants.push(`%${'+7' + without8}%`)        // +7900 (без пробела)
+      searchVariants.push(`%${'+7 ' + without8}%`)       // +7 900 (с пробелом)
+      searchVariants.push(`%${'+7(' + without8}%`)       // +7(900 (со скобкой)
+      searchVariants.push(`%${'+7 (' + without8}%`)      // +7 (900 (с пробелом и скобкой)
+      searchVariants.push(`%${'(' + without8}%`)         // (900 (только скобка)
+      searchVariants.push(`%${'(' + without8.slice(0, 3) + ')' + without8.slice(3)}%`) // (900)123 (полный формат)
     }
     // Если начинается с 7 — ищем и с 8
     if (digits.startsWith('7')) {
-      const with8 = '8' + digits.slice(1)
-      searchVariants.push(`%${with8}%`)
+      const without7 = digits.slice(1)
+      searchVariants.push(`%${'8' + without7}%`)         // 8900 (без +7)
+      searchVariants.push(`%${'+' + digits}%`)           // +7900
+      searchVariants.push(`%${'8 ' + without7}%`)        // 8 900 (с пробелом)
     }
     // Всегда ищем по введённым цифрам
     searchVariants.push(`%${digits}%`)
-    
+
     // Ищем по всем вариантам через OR
     const orConditions = searchVariants.map(v => `phone.ilike.${v}`).join(',')
-    
+
     const { data, error } = await supabase
       .from('clients')
       .select('*')
