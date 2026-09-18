@@ -19,11 +19,13 @@ const EASE = [0.23, 1, 0.32, 1] as const
 
 function MiniBullet({ icon: Icon, children }: { icon: LucideIcon; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center gap-2.5 max-w-[280px]">
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#ffdb33]/40 bg-[#ffdb33]/20">
-        <Icon className="h-4 w-4 text-[#111]" strokeWidth={1.8} />
+    <div className="flex flex-col items-center gap-3 max-w-[320px]">
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#ffdb33]/40 bg-[#ffdb33]/20">
+        <Icon className="h-5 w-5 text-[#111]" strokeWidth={1.8} />
       </span>
-      <p className="text-[14px] leading-[1.5] text-[#2F3437] md:text-[14px]">{children}</p>
+      <p className="text-center text-[16px] font-medium leading-[1.45] text-[#111] md:text-[17px]">
+        {children}
+      </p>
     </div>
   )
 }
@@ -45,13 +47,13 @@ export function FeatureBlock({
       id={id}
       className="mx-auto w-full max-w-[1400px] px-4 py-12 md:px-8 md:py-20 scroll-mt-20"
     >
-      {/* Заголовок + подзаголовок в одну строку */}
+      {/* Заголовок — в одну строку */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.6, ease: EASE }}
-        className="mb-6 flex items-center gap-4"
+        className="mb-3 flex items-center gap-4"
       >
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-black/10 bg-white font-head text-base font-semibold text-[#111]">
           {number}
@@ -59,18 +61,19 @@ export function FeatureBlock({
         <h2 className="font-head text-[26px] font-semibold leading-[1.15] tracking-[-0.02em] text-[#111] md:text-3xl lg:text-[36px] whitespace-nowrap">
           {title}
         </h2>
-        {!descriptionInCard && (
-          <span className="hidden md:inline-block flex-1 truncate text-[15px] leading-[1.4] text-[#787774]">
-            — {description}
-          </span>
-        )}
       </motion.div>
 
-      {/* Если description НЕ в карточке и НЕ в одну строку — выводим полным текстом на мобильных */}
+      {/* Подзаголовок — отдельной строкой под заголовком, в одну строку */}
       {!descriptionInCard && (
-        <p className="mb-8 text-[15px] leading-[1.6] text-[#2F3437] md:hidden md:mb-12">
+        <motion.p
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.6, ease: EASE, delay: 0.05 }}
+          className="mb-10 max-w-full truncate whitespace-nowrap text-[15px] leading-[1.4] text-[#787774] md:text-base md:mb-14"
+        >
           {description}
-        </p>
+        </motion.p>
       )}
       {descriptionInCard && <div className="mb-8 md:mb-10" />}
 
