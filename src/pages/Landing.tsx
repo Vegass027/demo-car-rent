@@ -37,7 +37,7 @@ function Bullet({ icon: Icon, children }: BulletProps) {
 
 export function Landing() {
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#FBFBFA] text-[#111]">
+    <div className="min-h-screen bg-[#FBFBFA] text-[#111]">
       <LandingHeader />
 
       {/* HERO */}
