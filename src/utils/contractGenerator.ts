@@ -15,6 +15,7 @@ import {
   AlignmentType,
   BorderStyle,
   ImageRun,
+  TableLayoutType,
 } from 'docx'
 import { saveAs } from 'file-saver'
 import type { ContractData, RentalContractData, BuyoutContractData, SimpleRentalContractData } from '@/types'
@@ -83,7 +84,7 @@ function createCell(text: string, widthPercent?: number, bold = false): TableCel
     width: widthPercent ? { size: widthPercent, type: WidthType.PERCENTAGE } : undefined,
     children: [
       new Paragraph({
-        children: [new TextRun({ text, size: 22, bold })],
+        children: [new TextRun({ text, size: 18, bold })],
       }),
     ],
     borders: {
@@ -240,6 +241,7 @@ export async function generateContractDocument(data: ContractData): Promise<void
           
           // Таблица с данными авто
           new Table({
+            layout: TableLayoutType.FIXED,
             width: { size: 100, type: WidthType.PERCENTAGE },
             rows: [
               createTwoColumnRow('Марка, модель:', `${data.carBrand} ${data.carModel}`, 'Год выпуска:', String(data.carYear || '')),
@@ -311,6 +313,7 @@ export async function generateContractDocument(data: ContractData): Promise<void
           
           // Таблица показаний (адаптивная ширина в процентах)
           new Table({
+            layout: TableLayoutType.FIXED,
             width: { size: 100, type: WidthType.PERCENTAGE },
             rows: [
               new TableRow({
@@ -347,6 +350,7 @@ export async function generateContractDocument(data: ContractData): Promise<void
           
           // Таблица комплектности (адаптивная ширина в процентах)
           new Table({
+            layout: TableLayoutType.FIXED,
             width: { size: 100, type: WidthType.PERCENTAGE },
             rows: [
               new TableRow({
@@ -603,6 +607,7 @@ export async function generateRentalContractDocument(data: RentalContractData): 
 
           // Таблица характеристик авто
           new Table({
+            layout: TableLayoutType.FIXED,
             width: { size: 100, type: WidthType.PERCENTAGE },
             rows: [
               createTwoColumnRow('Марка, модель:', `${data.carBrand} ${data.carModel}`, 'Год выпуска:', String(data.carYear || '')),
@@ -977,6 +982,7 @@ export async function generateServiceActDocument(data: ServiceActData): Promise<
           
           // Таблица услуг (адаптивная ширина в процентах)
           new Table({
+            layout: TableLayoutType.FIXED,
             width: { size: 100, type: WidthType.PERCENTAGE },
             rows: [
               // Заголовок таблицы
@@ -1210,6 +1216,7 @@ export async function generateBuyoutContractDocument(data: BuyoutContractData): 
 
           // Город и дата
           new Table({
+            layout: TableLayoutType.FIXED,
             width: { size: 100, type: WidthType.PERCENTAGE },
             rows: [
               new TableRow({
@@ -1232,6 +1239,7 @@ export async function generateBuyoutContractDocument(data: BuyoutContractData): 
 
           // Таблица сторон
           new Table({
+            layout: TableLayoutType.FIXED,
             width: { size: 100, type: WidthType.PERCENTAGE },
             rows: [
               new TableRow({
@@ -1835,6 +1843,7 @@ export async function generateSimpleRentalContractDocument(data: SimpleRentalCon
 
           // Город и дата
           new Table({
+            layout: TableLayoutType.FIXED,
             width: { size: 100, type: WidthType.PERCENTAGE },
             rows: [
               new TableRow({
@@ -1857,6 +1866,7 @@ export async function generateSimpleRentalContractDocument(data: SimpleRentalCon
 
           // Таблица сторон
           new Table({
+            layout: TableLayoutType.FIXED,
             width: { size: 100, type: WidthType.PERCENTAGE },
             rows: [
               new TableRow({
