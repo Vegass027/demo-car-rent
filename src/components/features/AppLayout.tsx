@@ -62,16 +62,19 @@ export function AppLayout({ children }: AppLayoutProps) {
               <NavButton to="/finance" label="💰 Финансы" isActive={location.pathname === '/finance'} />
               
               <span className="w-px h-6 bg-border mx-1" />
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                className="!px-2 !py-1 text-muted-foreground hover:text-foreground"
-                onClick={() => setShowChangePassword(true)}
-                title="Сменить пароль"
-              >
-                <KeyRound className="w-4 h-4" />
-              </Button>
+
+              {/* Кнопка смены пароля — скрыта в демо (демо-пользователи не должны менять пароль) */}
+              {false && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="!px-2 !py-1 text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowChangePassword(true)}
+                  title="Сменить пароль"
+                >
+                  <KeyRound className="w-4 h-4" />
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
@@ -112,11 +115,13 @@ export function AppLayout({ children }: AppLayoutProps) {
         </nav>
       )}
 
-      {/* Модалка смены пароля */}
-      <ChangePasswordModal
-        open={showChangePassword}
-        onClose={() => setShowChangePassword(false)}
-      />
+      {/* Модалка смены пароля — скрыта в демо */}
+      {false && (
+        <ChangePasswordModal
+          open={showChangePassword}
+          onClose={() => setShowChangePassword(false)}
+        />
+      )}
     </div>
   )
 }

@@ -13,7 +13,6 @@ import { Journal } from '@/pages/Journal'
 import { Finance } from '@/pages/Finance'
 import { Offline } from '@/pages/Offline'
 import { AppLayout } from '@/components/features/AppLayout'
-import { PWAStatusBar } from '@/components/features/PWAStatusBar'
 import { Toaster } from '@/components/retroui/Sonner'
 
 function AppRoutes() {
@@ -81,7 +80,6 @@ export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <PWAStatusBar />
         <AppRoutes />
       </BrowserRouter>
       <Toaster position="top-right" />

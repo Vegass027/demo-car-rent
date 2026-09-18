@@ -49,6 +49,23 @@
       #root.loaded {
         opacity: 1;
       }
+
+      /* === DEMO MODE: скрыть все кнопки удаления и смены пароля === */
+      /* Кнопки с любым title/aria-label начинающимся с "Удалить" */
+      button[title^="Удалить"],
+      button[title^="удалить"],
+      button[aria-label^="Удалить"],
+      button[aria-label^="удалить"] {
+        display: none !important;
+      }
+
+      /* Кнопка смены пароля в хедере */
+      button[title="Сменить пароль"] {
+        display: none !important;
+      }
+
+      /* Кнопка редактирования машины (в CarCard) — в демо не нужна */
+      /* НЕ скрываем — пусть пользователь может посмотреть параметры машины */
     </style>
   </head>
   <body>

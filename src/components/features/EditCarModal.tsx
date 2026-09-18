@@ -505,51 +505,55 @@ export function EditCarModal({ open, onOpenChange, car, onSuccess }: EditCarModa
             </Button>
           </div>
 
-          {/* Кнопка удаления */}
-          <div className="border-t border-border pt-4 mt-4">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700"
-              onClick={() => setShowDeleteConfirm(true)}
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Удалить машину
-            </Button>
-          </div>
-        </form>
-
-        {/* Модалка подтверждения удаления */}
-        <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-          <Dialog.Content className="max-w-sm">
-            <Dialog.Header className="text-center">
-              Удаление машины
-            </Dialog.Header>
-            <p className="text-center text-muted-foreground px-4 py-2">
-              Удалить «{car.name}» из списка?
-            </p>
-            <p className="text-center text-xs text-muted-foreground px-4 pb-2">
-              История аренд и расходов сохранится в финансовой отчётности.
-            </p>
-            <div className="flex gap-2 p-4 pt-2">
+          {/* Кнопка удаления — скрыта в демо */}
+          {false && (
+            <div className="border-t border-border pt-4 mt-4">
               <Button
+                type="button"
                 variant="outline"
-                onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1"
-                disabled={deleteCarMutation.isPending}
+                className="w-full text-red-600 border-red-300 hover:bg-red-50 hover:text-red-700"
+                onClick={() => setShowDeleteConfirm(true)}
               >
-                Отмена
-              </Button>
-              <Button
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
-                onClick={handleDelete}
-                disabled={deleteCarMutation.isPending}
-              >
-                {deleteCarMutation.isPending ? 'Удаление...' : 'Удалить'}
+                <Trash2 className="w-4 h-4 mr-2" />
+                Удалить машину
               </Button>
             </div>
-          </Dialog.Content>
-        </Dialog>
+          )}
+        </form>
+
+        {/* Модалка подтверждения удаления — скрыта в демо */}
+        {false && (
+          <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+            <Dialog.Content className="max-w-sm">
+              <Dialog.Header className="text-center">
+                Удаление машины
+              </Dialog.Header>
+              <p className="text-center text-muted-foreground px-4 py-2">
+                Удалить «{car.name}» из списка?
+              </p>
+              <p className="text-center text-xs text-muted-foreground px-4 pb-2">
+                История аренд и расходов сохранится в финансовой отчётности.
+              </p>
+              <div className="flex gap-2 p-4 pt-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="flex-1"
+                  disabled={deleteCarMutation.isPending}
+                >
+                  Отмена
+                </Button>
+                <Button
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                  onClick={handleDelete}
+                  disabled={deleteCarMutation.isPending}
+                >
+                  {deleteCarMutation.isPending ? 'Удаление...' : 'Удалить'}
+                </Button>
+              </div>
+            </Dialog.Content>
+          </Dialog>
+        )}
       </Dialog.Content>
     </Dialog>
   )

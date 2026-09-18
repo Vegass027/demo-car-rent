@@ -1654,18 +1654,24 @@ function AccountingView() {
             <p className="text-sm text-muted-foreground">Смена пароля для входа</p>
           </div>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => setShowChangePassword(true)}
-        >
-          Сменить пароль
-        </Button>
+        {/* Кнопка смены пароля — скрыта в демо */}
+        {false && (
+          <Button
+            variant="outline"
+            onClick={() => setShowChangePassword(true)}
+          >
+            Сменить пароль
+          </Button>
+        )}
       </div>
 
-      <ChangePasswordModal
-        open={showChangePassword}
-        onClose={() => setShowChangePassword(false)}
-      />
+      {/* Модалка смены пароля — скрыта в демо */}
+      {false && (
+        <ChangePasswordModal
+          open={showChangePassword}
+          onClose={() => setShowChangePassword(false)}
+        />
+      )}
     </div>
   )
 }
