@@ -63,12 +63,12 @@ export function LandingHeader() {
   return (
     <header
       className={cn(
-        'sticky top-0 left-0 right-0 z-50 transition-[background-color,border-color] duration-300',
+        'fixed top-0 left-0 right-0 z-50 transition-[background-color,border-color] duration-300',
         scrolled
           ? 'bg-white/95 border-b border-black/[0.08]'
           : 'bg-transparent border-b border-transparent'
       )}
-      style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0px)' }}
+      style={{ top: 'env(safe-area-inset-top, 0px)' }}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-8">
         {/* Логотип — только иконка */}

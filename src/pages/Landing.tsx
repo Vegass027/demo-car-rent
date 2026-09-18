@@ -40,6 +40,9 @@ export function Landing() {
     <div className="min-h-screen bg-[#FBFBFA] text-[#111]">
       <LandingHeader />
 
+      {/* Placeholder чтобы контент не уходил под fixed хедер */}
+      <div className="h-16" />
+
       {/* HERO */}
       <section className="relative overflow-hidden pt-28 pb-16 sm:pt-32 sm:pb-20 md:pt-40 md:pb-28">
         {/* Тонкая амбиент-сетка на фоне */}

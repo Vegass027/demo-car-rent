@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/retroui/Button";
 import { Input } from "@/components/retroui/Input";
 import { useSignIn } from "@/hooks/useAuth";
@@ -12,6 +14,7 @@ const OWNER_USERNAME = "Owner";
 const OWNER_PASSWORD = "owner123";
 
 export function LoginPage({ onLogin }: LoginPageProps) {
+  const navigate = useNavigate()
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const { mutate: signIn, isPending, error } = useSignIn();
@@ -40,6 +43,10 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         },
       }
     );
+  };
+
+  const handleBackToLanding = () => {
+    navigate('/landing')
   };
 
   return (
@@ -103,6 +110,17 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           >
             <span className="h-1.5 w-1.5 rounded-full bg-[#ffdb33]" />
             Войти как Владелец
+          </button>
+        </div>
+
+        <div className="flex justify-center pt-1">
+          <button
+            type="button"
+            onClick={handleBackToLanding}
+            className="inline-flex items-center justify-center gap-1.5 rounded-full bg-transparent px-4 py-1.5 text-xs sm:text-sm font-medium text-[#787774] transition-colors duration-200 hover:text-[#111] hover:bg-black/[0.04] active:scale-[0.98]"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
+            Назад к лендингу
           </button>
         </div>
       </form>
