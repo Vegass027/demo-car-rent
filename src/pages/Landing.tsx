@@ -24,11 +24,11 @@ interface BulletProps {
 
 function Bullet({ icon: Icon, children }: BulletProps) {
   return (
-    <div className="flex flex-col items-center gap-3 max-w-[320px]">
+    <div className="flex w-full max-w-[320px] flex-col items-center gap-3">
       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#ffdb33]/40 bg-[#ffdb33]/20">
         <Icon className="h-5 w-5 text-[#111]" strokeWidth={1.8} />
       </span>
-      <p className="text-center text-[16px] font-medium leading-[1.45] text-[#111] md:text-[17px]">
+      <p className="text-center text-[15px] font-medium leading-[1.45] text-[#111] sm:text-[16px] md:text-[17px]">
         {children}
       </p>
     </div>
@@ -37,11 +37,11 @@ function Bullet({ icon: Icon, children }: BulletProps) {
 
 export function Landing() {
   return (
-    <div className="min-h-screen bg-[#FBFBFA] text-[#111]">
+    <div className="min-h-screen overflow-x-hidden bg-[#FBFBFA] text-[#111]">
       <LandingHeader />
 
       {/* HERO */}
-      <section className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28">
+      <section className="relative overflow-hidden pt-28 pb-16 sm:pt-32 sm:pb-20 md:pt-40 md:pb-28">
         {/* Тонкая амбиент-сетка на фоне */}
         <div
           aria-hidden
@@ -63,17 +63,18 @@ export function Landing() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: EASE }}
-            className="font-head text-[40px] font-semibold leading-[1.05] tracking-[-0.025em] text-[#111] md:text-[64px] lg:text-[76px]"
+            className="font-head text-[30px] font-semibold leading-[1.05] tracking-[-0.025em] text-[#111] sm:text-[40px] md:text-[64px] lg:text-[76px]"
           >
-            Весь автопарк — <br className="hidden sm:block" />
-            в одном интерфейсе <span className="inline-block">📱</span>
+            Весь автопарк —
+            <br className="hidden sm:block" />
+            {' '}в одном интерфейсе <span className="inline-block">📱</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: EASE, delay: 0.08 }}
-            className="mt-7 max-w-[62ch] text-lg leading-[1.55] text-[#2F3437] md:text-xl"
+            className="mt-6 max-w-[62ch] text-base leading-[1.55] text-[#2F3437] sm:mt-7 sm:text-lg md:text-xl"
           >
             Собственнику — видно, где прибыль, а где убытки. Не нужно держать в голове,
             кто оплатил и какая машина свободна. Одно приложение вместо блокнота, Excel и памяти.
@@ -84,12 +85,12 @@ export function Landing() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: EASE, delay: 0.18 }}
-            className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3"
+            className="mt-8 flex flex-col items-center gap-3 sm:mt-10 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-6 sm:gap-y-3"
           >
             {TRIGGERS.map((t) => (
               <span
                 key={t.label}
-                className="flex items-center gap-2 font-mono text-[13px] uppercase tracking-[0.04em] text-[#2F3437]"
+                className="flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.04em] text-[#2F3437] sm:text-[13px]"
               >
                 <t.icon className="h-4 w-4 text-[#F97316]" strokeWidth={1.8} />
                 {t.label}
@@ -102,11 +103,11 @@ export function Landing() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: EASE, delay: 0.28 }}
-            className="mt-12 flex flex-col items-center gap-3 sm:flex-row"
+            className="mt-10 flex flex-col items-center gap-3 sm:mt-12 sm:flex-row"
           >
             <Link
               to="/login"
-              className="group inline-flex items-center gap-2 rounded-full bg-[#111] px-7 py-3 text-base font-medium text-white transition-all duration-200 hover:bg-[#333] active:scale-[0.98]"
+              className="group inline-flex items-center gap-2 rounded-full bg-[#111] px-6 py-3 text-sm font-medium text-white transition-all duration-200 hover:bg-[#333] active:scale-[0.98] sm:px-7 sm:text-base"
             >
               Открыть демо
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-[1px] group-hover:scale-105">
@@ -115,7 +116,7 @@ export function Landing() {
             </Link>
             <a
               href="#dashboard"
-              className="inline-flex items-center rounded-full border border-black/10 bg-white px-6 py-3 text-sm font-medium text-[#111] transition-colors hover:border-black/20 hover:bg-[#F7F6F3]"
+              className="inline-flex items-center rounded-full border border-black/10 bg-white px-5 py-3 text-sm font-medium text-[#111] transition-colors hover:border-black/20 hover:bg-[#F7F6F3] sm:px-6"
             >
               Посмотреть возможности
             </a>
@@ -274,14 +275,14 @@ export function Landing() {
       </div>
 
       {/* Финальный CTA */}
-      <section className="px-4 py-20 md:py-28">
+      <section className="px-4 py-16 md:py-28">
         <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
           <motion.h2
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.6, ease: EASE }}
-            className="font-head text-3xl font-semibold leading-[1.1] tracking-[-0.02em] text-[#111] md:text-5xl"
+            className="font-head text-[26px] font-semibold leading-[1.1] tracking-[-0.02em] text-[#111] sm:text-3xl md:text-5xl"
           >
             Посмотрите, как это работает
           </motion.h2>
@@ -290,7 +291,7 @@ export function Landing() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.6, ease: EASE, delay: 0.08 }}
-            className="mt-5 max-w-[55ch] text-base leading-[1.6] text-[#2F3437] md:text-lg"
+            className="mt-5 max-w-[55ch] text-[15px] leading-[1.6] text-[#2F3437] sm:text-base md:text-lg"
           >
             Демо-вход с готовыми тестовыми данными — машины, клиенты, расходы и выкуп.
             Никакой регистрации, ничего не нужно устанавливать.
@@ -300,11 +301,11 @@ export function Landing() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.6, ease: EASE, delay: 0.16 }}
-            className="mt-10"
+            className="mt-8 md:mt-10"
           >
             <Link
               to="/login"
-              className="group inline-flex items-center gap-2 rounded-full bg-[#111] px-8 py-3.5 text-base font-medium text-white transition-all duration-200 hover:bg-[#333] active:scale-[0.98]"
+              className="group inline-flex items-center gap-2 rounded-full bg-[#111] px-6 py-3 text-sm font-medium text-white transition-all duration-200 hover:bg-[#333] active:scale-[0.98] sm:px-8 sm:py-3.5 sm:text-base"
             >
               Открыть демо
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-[1px] group-hover:scale-105">

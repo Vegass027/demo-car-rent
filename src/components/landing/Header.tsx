@@ -47,11 +47,11 @@ export function LandingHeader() {
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-8">
         {/* Логотип */}
-        <Link to="/landing" className="flex items-center gap-2 font-head text-base font-semibold text-[#111]">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#ffdb33] border border-black/10">
+        <Link to="/landing" className="flex items-center gap-2 font-head text-sm font-semibold text-[#111] sm:text-base">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#ffdb33] border border-black/10">
             <Car className="h-4 w-4 text-[#111]" />
           </span>
-          Автопарк CRM
+          <span className="hidden sm:inline">Автопарк CRM</span>
         </Link>
 
         {/* Десктоп нав */}

@@ -45,7 +45,7 @@ export function FeatureBlock({
   return (
     <section
       id={id}
-      className="mx-auto w-full max-w-[1400px] px-4 py-12 md:px-8 md:py-20 scroll-mt-20"
+      className="mx-auto w-full max-w-[1400px] overflow-hidden px-4 py-10 md:px-8 md:py-20 scroll-mt-20"
     >
       {/* Шапка блока: цифра (по центру группы) + заголовок + подзаголовок с разделителем */}
       <motion.div
@@ -53,32 +53,32 @@ export function FeatureBlock({
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.6, ease: EASE }}
-        className="mb-10 grid grid-cols-[auto_1fr] items-center gap-4 md:mb-14"
+        className="mb-8 grid grid-cols-[auto_1fr] items-center gap-3 min-w-0 md:mb-14 md:gap-4"
       >
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-black/10 bg-white font-head text-[15px] font-semibold text-[#111] md:h-11 md:w-11 md:text-base">
           {number}
         </span>
         {!descriptionInCard ? (
-          <div>
-            <h2 className="font-head text-[20px] font-semibold leading-[1.15] tracking-[-0.02em] text-[#111] md:text-3xl lg:text-[36px] md:whitespace-nowrap">
+          <div className="min-w-0">
+            <h2 className="font-head text-[18px] font-semibold leading-[1.15] tracking-[-0.02em] text-[#111] sm:text-[22px] md:text-3xl lg:text-[36px] md:whitespace-nowrap">
               {title}
             </h2>
-            <p className="mt-3 max-w-full border-t border-black/[0.08] pt-3 text-[14px] leading-[1.4] text-[#787774] md:truncate md:whitespace-nowrap md:text-base">
+            <p className="mt-3 max-w-full border-t border-black/[0.08] pt-3 text-[13px] leading-[1.4] text-[#787774] sm:text-[14px] md:truncate md:whitespace-nowrap md:text-base">
               {description}
             </p>
           </div>
         ) : (
-          <h2 className="font-head text-[20px] font-semibold leading-[1.15] tracking-[-0.02em] text-[#111] md:text-3xl lg:text-[36px] md:whitespace-nowrap">
+          <h2 className="font-head text-[18px] font-semibold leading-[1.15] tracking-[-0.02em] text-[#111] sm:text-[22px] md:text-3xl lg:text-[36px] md:whitespace-nowrap">
             {title}
           </h2>
         )}
       </motion.div>
 
-      {descriptionInCard && <div className="mb-8 md:mb-10" />}
+      {descriptionInCard && <div className="mb-6 md:mb-10" />}
 
       {/* Картинка + блок с текстом сбоку (без рамки, центрирован по вертикали) */}
       <div
-        className={`grid grid-cols-1 items-center gap-6 md:gap-10 md:grid-cols-12 ${
+        className={`grid min-w-0 grid-cols-1 items-center gap-6 md:gap-10 md:grid-cols-12 ${
           imagePosition === 'left' ? 'md:[&>*:first-child]:order-2' : ''
         }`}
       >
