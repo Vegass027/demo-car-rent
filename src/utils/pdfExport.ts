@@ -14,11 +14,11 @@ const A4_HEIGHT_PX = 1123
 
 /**
  * Конвертирует HTML-строку в PDF и открывает его в новой вкладке.
- * На мобильных устройствах пользователь получает готовый PDF.
+ * Делит документ на страницы по <div class="page-break"></div> —
+ * они уже проставлены между частями договоров (Договор / Прил.1 / Прил.2).
  */
 export async function exportHtmlToPdf(html: string, filename: string): Promise<void> {
-  // 1. Создаём offscreen-контейнер в текущей странице (не iframe — html2canvas
-  //    не умеет корректно рендерить документ внутри iframe с srcdoc)
+  // 1. Создаём offscreen-контейнер в текущей странице
   const container = document.createElement('div')
   container.style.cssText = `
     position: absolute;
@@ -26,7 +26,6 @@ export async function exportHtmlToPdf(html: string, filename: string): Promise<v
     top: 0;
     width: ${A4_WIDTH_PX}px;
     background: white;
-    z-index: -1;
   `
   container.innerHTML = html
   document.body.appendChild(container)
@@ -47,20 +46,66 @@ export async function exportHtmlToPdf(html: string, filename: string): Promise<v
           }),
       ),
     )
-
-    // Даём браузеру ещё немного времени на финальную отрисовку
     await new Promise((resolve) => setTimeout(resolve, 100))
 
-    // 3. html2canvas снимает контейнер
-    const fullCanvas = await html2canvas(container, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      windowWidth: A4_WIDTH_PX,
-      logging: false,
-    })
+    // 3. Разбиваем документ на страницы по <div class="page-break">
+    //    Каждая страница — отдельный контейнер фиксированной высоты A4.
+    //    Если разделителей нет — единая страница по размеру контента.
+    const body = container.querySelector('body') || container
+    const pageBreakEls = Array.from(body.querySelectorAll('.page-break'))
 
-    // 4. Режем canvas на страницы A4 и собираем PDF
+    const pages: HTMLElement[] = []
+
+    if (pageBreakEls.length > 0) {
+      // Строим страницы между разделителями
+      const makePage = () => {
+        const page = document.createElement('div')
+        page.style.cssText = `
+          width: ${A4_WIDTH_PX}px;
+          min-height: ${A4_HEIGHT_PX}px;
+          background: white;
+          padding: 0;
+          box-sizing: border-box;
+          overflow: hidden;
+          position: relative;
+        `
+        return page
+      }
+
+      const firstPage = makePage()
+      body.insertBefore(firstPage, body.firstChild)
+      pages.push(firstPage)
+
+      pageBreakEls.forEach((br) => {
+        // Переносим page-break сам по себе в скрытый helper, чтобы не
+        // попадал в рендер. Сами элементы до br попадают в текущую страницу.
+        const nextPage = makePage()
+        // Все узлы после br до следующего br (или конца) — в следующую страницу
+        let cursor: ChildNode | null = br.nextSibling
+        while (cursor) {
+          const next: ChildNode | null = cursor.nextSibling
+          nextPage.appendChild(cursor)
+          cursor = next
+        }
+        // br удалим — он больше не нужен
+        br.remove()
+        body.appendChild(nextPage)
+        pages.push(nextPage)
+      })
+    } else {
+      const single = document.createElement('div')
+      single.style.cssText = `
+        width: ${A4_WIDTH_PX}px;
+        min-height: ${A4_HEIGHT_PX}px;
+        background: white;
+      `
+      single.innerHTML = container.innerHTML
+      container.innerHTML = ''
+      container.appendChild(single)
+      pages.push(single)
+    }
+
+    // 4. Снимаем каждую страницу отдельно
     const pdf = new jsPDF({
       unit: 'px',
       format: 'a4',
@@ -68,40 +113,23 @@ export async function exportHtmlToPdf(html: string, filename: string): Promise<v
       compress: true,
     })
 
-    const fullImgHeight = fullCanvas.height
-    const fullImgWidth = fullCanvas.width
-    const pagesCount = Math.ceil(fullImgHeight / A4_HEIGHT_PX)
+    for (let i = 0; i < pages.length; i++) {
+      const pageEl = pages[i]
+      const canvas = await html2canvas(pageEl, {
+        scale: 1.5,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        windowWidth: A4_WIDTH_PX,
+        logging: false,
+      })
 
-    const pageCanvas = document.createElement('canvas')
-    pageCanvas.width = fullImgWidth
-    pageCanvas.height = A4_HEIGHT_PX
-    const pageCtx = pageCanvas.getContext('2d')
-    if (!pageCtx) throw new Error('canvas 2d context unavailable')
-
-    for (let i = 0; i < pagesCount; i++) {
-      const yOffset = i * A4_HEIGHT_PX
-      const sliceHeight = Math.min(A4_HEIGHT_PX, fullImgHeight - yOffset)
-
-      pageCtx.fillStyle = '#ffffff'
-      pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height)
-      pageCtx.drawImage(
-        fullCanvas,
-        0,
-        yOffset,
-        fullImgWidth,
-        sliceHeight,
-        0,
-        0,
-        fullImgWidth,
-        sliceHeight,
-      )
-
-      const pageDataUrl = pageCanvas.toDataURL('image/jpeg', 0.92)
+      const pageDataUrl = canvas.toDataURL('image/jpeg', 0.92)
 
       if (i > 0) pdf.addPage()
-      // Растягиваем по ширине A4, высота = пропорционально
-      const sliceHeightInPdf = (sliceHeight * A4_WIDTH_PX) / fullImgWidth
-      pdf.addImage(pageDataUrl, 'JPEG', 0, 0, A4_WIDTH_PX, sliceHeightInPdf)
+      // Помещаем в A4 с сохранением пропорций
+      const imgWidth = A4_WIDTH_PX
+      const imgHeight = (canvas.height * imgWidth) / canvas.width
+      pdf.addImage(pageDataUrl, 'JPEG', 0, 0, imgWidth, imgHeight)
     }
 
     // 5. Отдаём пользователю — iOS Safari открывает нативный PDF-viewer
