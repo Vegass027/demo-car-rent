@@ -22,7 +22,8 @@ import { useSaveClientFromContract } from '@/hooks/useClients'
 import { formatMoney } from '@/utils/format'
 import { calcProfit } from '@/utils/calc'
 import { generateContractDocument, generateServiceActDocument, generateBuyoutContractDocument, generateSimpleRentalContractDocument, generateContractNumber } from '@/utils/contractGenerator'
-import { generateContractDocumentHTML, generateServiceActDocumentHTML, generateBuyoutContractDocumentHTML, generateSimpleRentalContractDocumentHTML, openHtmlDocument } from '@/utils/contractGeneratorHTML'
+import { generateContractDocumentHTML, generateServiceActDocumentHTML, generateBuyoutContractDocumentHTML, generateSimpleRentalContractDocumentHTML } from '@/utils/contractGeneratorHTML'
+import { exportHtmlToPdf } from '@/utils/pdfExport'
 
 // Определение мобильного устройства — на мобильных открываем HTML (DOCX криво рендерится в Safari)
 function isMobileDevice(): boolean {
@@ -437,18 +438,19 @@ export function RecordModal({
         },
       }
 
-      // На мобильном открываем HTML в браузере (DOCX криво рендерится в Safari)
-      // На десктопе сохраняем DOCX (редактируемый формат)
+      // На мобильном генерируем PDF (DOCX криво рендерится в Safari, печать браузера даёт лишний footer).
+      // На десктопе сохраняем DOCX (редактируемый формат).
       console.log('[RecordModal] handleGenerateContract, isMobile:', isMobileDevice())
       if (isMobileDevice()) {
         try {
           const html = await generateContractDocumentHTML(data)
           console.log('[RecordModal] HTML generated, length:', html.length)
-          openHtmlDocument(html)
-          console.log('[RecordModal] openHtmlDocument called')
+          const filename = `Акт_${data.carLicensePlate}_${data.client.fullName.replace(/\s+/g, '_')}.pdf`
+          await exportHtmlToPdf(html, filename)
+          console.log('[RecordModal] PDF opened')
         } catch (htmlErr) {
-          console.error('[RecordModal] HTML generation error:', htmlErr)
-          alert('Ошибка генерации HTML: ' + (htmlErr as Error).message)
+          console.error('[RecordModal] PDF generation error:', htmlErr)
+          alert('Ошибка генерации PDF: ' + (htmlErr as Error).message)
         }
       } else {
         await generateContractDocument(data)
@@ -517,10 +519,10 @@ export function RecordModal({
         carLicensePlate: selectedCar.licensePlate,
       }
 
-      // На мобильном открываем HTML, на десктопе — DOCX
+      // На мобильном генерируем PDF, на десктопе — DOCX
       if (isMobileDevice()) {
         const html = generateServiceActDocumentHTML(data)
-        openHtmlDocument(html)
+        await exportHtmlToPdf(html, `Акт_ТО_${data.carLicensePlate}_${data.customer.fullName.replace(/\s+/g, '_')}.pdf`)
       } else {
         await generateServiceActDocument(data)
       }
@@ -601,10 +603,10 @@ export function RecordModal({
         relatives: buyoutRelatives,
       }
 
-      // На мобильном открываем HTML, на десктопе — DOCX
+      // На мобильном генерируем PDF, на десктопе — DOCX
       if (isMobileDevice()) {
         const html = await generateBuyoutContractDocumentHTML(data)
-        openHtmlDocument(html)
+        await exportHtmlToPdf(html, `Договор_выкуп_${data.carLicensePlate}_${data.client.fullName.replace(/\s+/g, '_')}.pdf`)
       } else {
         await generateBuyoutContractDocument(data)
       }
@@ -676,10 +678,10 @@ export function RecordModal({
         },
       }
 
-      // На мобильном открываем HTML, на десктопе — DOCX
+      // На мобильном генерируем PDF, на десктопе — DOCX
       if (isMobileDevice()) {
         const html = generateSimpleRentalContractDocumentHTML(data)
-        openHtmlDocument(html)
+        await exportHtmlToPdf(html, `Договор_аренда_${data.carLicensePlate}_${data.client.fullName.replace(/\s+/g, '_')}.pdf`)
       } else {
         await generateSimpleRentalContractDocument(data)
       }

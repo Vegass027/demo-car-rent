@@ -24,7 +24,8 @@ import { formatMoney } from '@/utils/format'
 import { calcBuyoutProfitShare } from '@/utils/calc'
 import { CAR_STATUS_LABELS, MONTHS_RU, PREPARATION_CATEGORY_NAMES, PREPARATION_NOTES } from '@/constants'
 import { generateContractDocument, generateSimpleRentalContractDocument, generateServiceActDocument, generateContractNumber } from '@/utils/contractGenerator'
-import { generateContractDocumentHTML, generateSimpleRentalContractDocumentHTML, generateServiceActDocumentHTML, openHtmlDocument } from '@/utils/contractGeneratorHTML'
+import { generateContractDocumentHTML, generateSimpleRentalContractDocumentHTML, generateServiceActDocumentHTML } from '@/utils/contractGeneratorHTML'
+import { exportHtmlToPdf } from '@/utils/pdfExport'
 import { getClient, clientToContractData } from '@/api/clients'
 import { Loader } from '@/components/retroui/Loader'
 import type { CarStatus, ExpenseCategory, CarRecord, ContractClientData } from '@/types'
@@ -603,7 +604,7 @@ export function CarDetail() {
           phone: companySettings?.ownerPhone || '',
         },
       })
-      openHtmlDocument(html)
+      await exportHtmlToPdf(html, `Акт_${car.licensePlate}_${record.renterName?.replace(/\s+/g, '_') || ''}.pdf`)
     } catch (error) {
       console.error('Ошибка генерации HTML:', error)
       alert('Ошибка при генерации документа: ' + (error as Error).message)
@@ -653,7 +654,7 @@ export function CarDetail() {
           phone: companySettings?.ownerPhone || '',
         },
       })
-      openHtmlDocument(html)
+      await exportHtmlToPdf(html, `Договор_аренда_${car.licensePlate}_${record.renterName?.replace(/\s+/g, '_') || ''}.pdf`)
     } catch (error) {
       console.error('Ошибка генерации HTML:', error)
       alert('Ошибка при генерации документа: ' + (error as Error).message)
@@ -687,7 +688,7 @@ export function CarDetail() {
         customer: { fullName: record.renterName || '' },
         totalAmountWords: '',
       })
-      openHtmlDocument(html)
+      await exportHtmlToPdf(html, `Акт_ТО_${car.licensePlate}_${record.renterName?.replace(/\s+/g, '_') || ''}.pdf`)
     } catch (error) {
       console.error('Ошибка генерации HTML:', error)
       alert('Ошибка при генерации документа: ' + (error as Error).message)

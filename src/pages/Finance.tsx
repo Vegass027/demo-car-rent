@@ -26,7 +26,8 @@ import { useCompanySettings, useUpdateCompanySettings } from '@/hooks/useCompany
 import { formatMoney, formatDate } from '@/utils/format'
 import { calcBuyoutTotalSum, calcBuyoutProfitShare } from '@/utils/calc'
 import { generateContractDocument, generateSimpleRentalContractDocument, generateServiceActDocument, generateBuyoutContractDocument, generateContractNumber } from '@/utils/contractGenerator'
-import { generateContractDocumentHTML, generateServiceActDocumentHTML, generateBuyoutContractDocumentHTML, generateSimpleRentalContractDocumentHTML, openHtmlDocument } from '@/utils/contractGeneratorHTML'
+import { generateContractDocumentHTML, generateServiceActDocumentHTML, generateBuyoutContractDocumentHTML, generateSimpleRentalContractDocumentHTML } from '@/utils/contractGeneratorHTML'
+import { exportHtmlToPdf } from '@/utils/pdfExport'
 
 // На мобильных открываем HTML (DOCX криво рендерится в Safari)
 function isMobileDevice(): boolean {
@@ -2343,7 +2344,7 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
       }
 
       if (isMobileDevice()) {
-        openHtmlDocument(await generateContractDocumentHTML(data))
+        await exportHtmlToPdf(await generateContractDocumentHTML(data), `Акт_${car.licensePlate}_${client.fullName.replace(/\s+/g, '_')}.pdf`)
       } else {
         await generateContractDocument(data)
       }
@@ -2421,7 +2422,7 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
       }
 
       if (isMobileDevice()) {
-        openHtmlDocument(generateSimpleRentalContractDocumentHTML(data))
+        await exportHtmlToPdf(generateSimpleRentalContractDocumentHTML(data), `Договор_аренда_${car.licensePlate}_${client.fullName.replace(/\s+/g, '_')}.pdf`)
       } else {
         await generateSimpleRentalContractDocument(data)
       }
@@ -2486,7 +2487,7 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
       }
 
       if (isMobileDevice()) {
-        openHtmlDocument(generateServiceActDocumentHTML(data))
+        await exportHtmlToPdf(generateServiceActDocumentHTML(data), `Акт_ТО_${car.licensePlate}_${client.fullName.replace(/\s+/g, '_')}.pdf`)
       } else {
         await generateServiceActDocument(data)
       }
@@ -2570,7 +2571,7 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
       }
 
       if (isMobileDevice()) {
-        openHtmlDocument(generateBuyoutContractDocumentHTML(data))
+        await exportHtmlToPdf(generateBuyoutContractDocumentHTML(data), `Договор_выкуп_${car.licensePlate}_${client.fullName.replace(/\s+/g, '_')}.pdf`)
       } else {
         await generateBuyoutContractDocument(data)
       }
@@ -3023,7 +3024,7 @@ function BuyoutContractCard({ contract, companySettings, cars, onOpenPayment }: 
       }
 
       if (isMobileDevice()) {
-        openHtmlDocument(generateBuyoutContractDocumentHTML(data))
+        await exportHtmlToPdf(generateBuyoutContractDocumentHTML(data), `Договор_выкуп_${car.licensePlate}_${(client?.fullName || record.renterName || '').replace(/\s+/g, '_')}.pdf`)
       } else {
         await generateBuyoutContractDocument(data)
       }
