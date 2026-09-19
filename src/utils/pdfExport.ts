@@ -73,21 +73,63 @@ export async function exportHtmlToPdf(html: string, filename: string): Promise<v
       logging: false,
     })
 
-    // Нарезаем canvas на страницы A4 — DOM больше не трогаем
+    // Нарезаем canvas на страницы A4 — DOM больше не трогаем.
+    // hotfixes: ['px_scaling'] — фикс известного бага jsPDF, который при
+    // unit:'px' + format:'a4' считал страницу ~446×631 вместо 794×1123.
     const pdf = new jsPDF({
       unit: 'px',
       format: 'a4',
       orientation: 'portrait',
       compress: true,
+      hotfixes: ['px_scaling'],
     })
 
-    // pageHeightPx в координатах canvas: A4_HEIGHT_PX * (canvasWidth / A4_WIDTH_PX)
-    // т.к. canvas масштабирован в scale раз (1.5), его ширина = A4_WIDTH_PX * 1.5
-    const pageHeightPx = A4_HEIGHT_PX * (canvas.width / A4_WIDTH_PX)
-    const totalPages = Math.ceil(canvas.height / pageHeightPx)
+    // Естественные границы страниц — координаты .page-break в документе.
+    // В обычном (не print) рендере page-break-before:always НЕ действует,
+    // но сам div всё равно есть — берём его координаты как точки разрыва.
+    const scale = 1.5
+    const bodyTop = doc.body.getBoundingClientRect().top
+    const naturalBreaksCanvasPx = Array.from(
+      doc.querySelectorAll<HTMLElement>('.page-break'),
+    )
+      .map((el) => (el.getBoundingClientRect().top - bodyTop) * scale)
+      .filter((y) => y > 0 && y < canvas.height)
 
-    for (let i = 0; i < totalPages; i++) {
-      const sliceHeight = Math.min(pageHeightPx, canvas.height - i * pageHeightPx)
+    const pageHeightCanvasPx = A4_HEIGHT_PX * scale
+
+    const buildPageBoundaries = (
+      totalHeight: number,
+      naturalBreaks: number[],
+      maxPageHeight: number,
+    ): number[] => {
+      const marks = Array.from(new Set([0, ...naturalBreaks, totalHeight])).sort(
+        (a, b) => a - b,
+      )
+      const boundaries: number[] = [0]
+      for (let i = 1; i < marks.length; i++) {
+        const segStart = marks[i - 1]
+        const segHeight = marks[i] - segStart
+        if (segHeight <= 0) continue
+        // Если смысловой сегмент между разрывами выше одной A4-страницы — делим поровну
+        const chunks = Math.ceil(segHeight / maxPageHeight)
+        for (let c = 1; c <= chunks; c++) {
+          boundaries.push(Math.min(segStart + c * (segHeight / chunks), marks[i]))
+        }
+      }
+      return boundaries
+    }
+
+    const boundaries = buildPageBoundaries(
+      canvas.height,
+      naturalBreaksCanvasPx,
+      pageHeightCanvasPx,
+    )
+
+    for (let i = 0; i < boundaries.length - 1; i++) {
+      const y0 = boundaries[i]
+      const sliceHeight = boundaries[i + 1] - y0
+      if (sliceHeight <= 0) continue
+
       const pageCanvas = document.createElement('canvas')
       pageCanvas.width = canvas.width
       pageCanvas.height = sliceHeight
@@ -99,7 +141,7 @@ export async function exportHtmlToPdf(html: string, filename: string): Promise<v
       ctx.drawImage(
         canvas,
         0,
-        i * pageHeightPx,
+        y0,
         canvas.width,
         sliceHeight,
         0,
