@@ -141,7 +141,11 @@ const CSS = `
   .no-break { page-break-inside: avoid; }
   .page-break { page-break-before: always; }
   @media print {
-    body { padding: 0; }
+    /* Убираем поля страницы — тогда браузеру негде рисовать свой
+       header/footer с URL (blob:https://...), и они просто не печатаются.
+       Свои отступы переносим на body, чтобы текст не упирался в край. */
+    @page { margin: 0; }
+    body { padding: 1.5cm; margin: 0; }
     .no-print { display: none !important; }
   }
   @media screen and (max-width: 600px) {
@@ -169,11 +173,10 @@ ${body}
 </html>`
 }
 
-// Открывает HTML в fullscreen overlay iframe (внутри текущей страницы).
-// Не использует blob URL — URL в адресной строке остаётся прежним,
-// и в шапке при предпросмотре печати не показывается 'blob:https://...'.
+// Открывает HTML в полноэкранном iframe (внутри текущей страницы).
+// Без blob URL — URL страницы не меняется, в шапке печати ничего лишнего.
+// Закрывается по ESC или клику вне документа.
 export function openHtmlDocument(html: string): void {
-  // Удаляем предыдущий overlay, если он остался
   const existing = document.getElementById('html-doc-overlay-root')
   if (existing) existing.remove()
 
@@ -182,55 +185,42 @@ export function openHtmlDocument(html: string): void {
   root.style.cssText = `
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: white; z-index: 2147483647;
-    display: flex; flex-direction: column;
   `
-
-  const toolbar = document.createElement('div')
-  toolbar.style.cssText = `
-    display: flex; gap: 8px; padding: 10px 14px;
-    background: #1f2937; color: white;
-    border-bottom: 1px solid #374151;
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    flex-shrink: 0;
-  `
-
-  const printBtn = document.createElement('button')
-  printBtn.textContent = '🖨 Печать / PDF'
-  printBtn.style.cssText = `
-    padding: 8px 16px; background: #3b82f6; color: white;
-    border: none; border-radius: 6px; font-size: 14px;
-    font-weight: 600; cursor: pointer;
-  `
-  printBtn.onclick = () => {
-    const iframe = root.querySelector('iframe')
-    if (iframe && iframe.contentWindow) {
-      iframe.contentWindow.focus()
-      iframe.contentWindow.print()
-    }
-  }
-
-  const closeBtn = document.createElement('button')
-  closeBtn.textContent = '✕ Закрыть'
-  closeBtn.style.cssText = `
-    padding: 8px 16px; background: #ef4444; color: white;
-    border: none; border-radius: 6px; font-size: 14px;
-    font-weight: 600; cursor: pointer; margin-left: auto;
-  `
-  closeBtn.onclick = () => root.remove()
-
-  toolbar.appendChild(printBtn)
-  toolbar.appendChild(closeBtn)
 
   const iframe = document.createElement('iframe')
-  iframe.style.cssText = `
-    flex: 1; width: 100%; border: none; background: white;
-  `
-  // srcdoc НЕ создаёт blob URL — это безопасно и не светится в печати
+  iframe.style.cssText = 'width: 100%; height: 100%; border: none; background: white;'
+  // srcdoc НЕ создаёт blob URL — URL страницы остаётся прежним
   iframe.srcdoc = html
 
-  root.appendChild(toolbar)
+  // Закрытие по ESC
+  const close = () => root.remove()
+  const escHandler = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      close()
+      document.removeEventListener('keydown', escHandler)
+    }
+  }
+  document.addEventListener('keydown', escHandler)
+
+  // ESC изнутри iframe (у iframe свой document)
+  iframe.addEventListener('load', () => {
+    try {
+      const innerDoc = iframe.contentDocument
+      if (innerDoc) {
+        innerDoc.addEventListener('keydown', (e: KeyboardEvent) => {
+          if (e.key === 'Escape') close()
+        })
+      }
+    } catch {
+      // cross-origin — игнорируем
+    }
+  })
+
   root.appendChild(iframe)
   document.body.appendChild(root)
+
+  // Фокус на iframe чтобы ESC работал
+  setTimeout(() => iframe.focus(), 50)
 }
 
 // ============================================================
