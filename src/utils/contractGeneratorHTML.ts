@@ -175,10 +175,13 @@ ${body}
 
 // Открывает HTML в полноэкранном iframe (внутри текущей страницы).
 // Без blob URL — URL страницы не меняется, в шапке печати ничего лишнего.
-// Закрывается по ESC или клику вне документа.
+// При печати всё остальное скрывается — в предпросмотре видно только документ.
+// Закрывается по ESC.
 export function openHtmlDocument(html: string): void {
   const existing = document.getElementById('html-doc-overlay-root')
   if (existing) existing.remove()
+  const existingStyles = document.getElementById('html-doc-print-styles')
+  if (existingStyles) existingStyles.remove()
 
   const root = document.createElement('div')
   root.id = 'html-doc-overlay-root'
@@ -189,20 +192,40 @@ export function openHtmlDocument(html: string): void {
 
   const iframe = document.createElement('iframe')
   iframe.style.cssText = 'width: 100%; height: 100%; border: none; background: white;'
-  // srcdoc НЕ создаёт blob URL — URL страницы остаётся прежним
   iframe.srcdoc = html
 
-  // Закрытие по ESC
-  const close = () => root.remove()
-  const escHandler = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      close()
-      document.removeEventListener('keydown', escHandler)
+  // При печати скрываем ВСЁ кроме overlay. Иначе браузер в предпросмотре
+  // показывает родительский UI вместе с документом (поверх и под).
+  const printStyles = document.createElement('style')
+  printStyles.id = 'html-doc-print-styles'
+  printStyles.textContent = `
+    @media print {
+      html, body { background: white !important; }
+      body > *:not(#html-doc-overlay-root) { display: none !important; }
+      #html-doc-overlay-root {
+        position: static !important;
+        width: 100% !important;
+        height: auto !important;
+      }
+      #html-doc-overlay-root > iframe {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 100vh;
+      }
     }
+  `
+  document.head.appendChild(printStyles)
+
+  const close = () => {
+    root.remove()
+    printStyles.remove()
+    document.removeEventListener('keydown', escHandler)
+  }
+  const escHandler = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') close()
   }
   document.addEventListener('keydown', escHandler)
 
-  // ESC изнутри iframe (у iframe свой document)
   iframe.addEventListener('load', () => {
     try {
       const innerDoc = iframe.contentDocument
@@ -212,14 +235,13 @@ export function openHtmlDocument(html: string): void {
         })
       }
     } catch {
-      // cross-origin — игнорируем
+      // cross-origin
     }
   })
 
   root.appendChild(iframe)
   document.body.appendChild(root)
 
-  // Фокус на iframe чтобы ESC работал
   setTimeout(() => iframe.focus(), 50)
 }
 
