@@ -95,33 +95,61 @@ export async function exportHtmlToPdf(html: string, filename: string): Promise<v
       .map((el) => (el.getBoundingClientRect().top - bodyTop) * scale)
       .filter((y) => y > 0 && y < canvas.height)
 
+    // Атомы — элементы, которые нельзя резать пополам (строки таблиц,
+    // абзацы, пункты списков, заголовки). Их границы в canvas px.
+    interface Rect { top: number; bottom: number }
+    const atoms: Rect[] = Array.from(
+      doc.querySelectorAll<HTMLElement>('tr, p, li, h1, h2, h3, h4'),
+    ).map((el) => {
+      const r = el.getBoundingClientRect()
+      return {
+        top: (r.top - bodyTop) * scale,
+        bottom: (r.bottom - bodyTop) * scale,
+      }
+    })
+
     const pageHeightCanvasPx = A4_HEIGHT_PX * scale
 
+    // Если сегмент между forced-breaks выше одной A4-страницы, режем
+    // его не поровну, а по ближайшей нижней границе атома — между строк,
+    // а не через букву.
     const buildPageBoundaries = (
       totalHeight: number,
-      naturalBreaks: number[],
+      forcedBreaks: number[],
+      atomRects: Rect[],
       maxPageHeight: number,
     ): number[] => {
-      const marks = Array.from(new Set([0, ...naturalBreaks, totalHeight])).sort(
+      const forced = Array.from(new Set([0, ...forcedBreaks, totalHeight])).sort(
         (a, b) => a - b,
       )
       const boundaries: number[] = [0]
-      for (let i = 1; i < marks.length; i++) {
-        const segStart = marks[i - 1]
-        const segHeight = marks[i] - segStart
-        if (segHeight <= 0) continue
-        // Если смысловой сегмент между разрывами выше одной A4-страницы — делим поровну
-        const chunks = Math.ceil(segHeight / maxPageHeight)
-        for (let c = 1; c <= chunks; c++) {
-          boundaries.push(Math.min(segStart + c * (segHeight / chunks), marks[i]))
+
+      for (let i = 1; i < forced.length; i++) {
+        let cursor = forced[i - 1]
+        const segmentEnd = forced[i]
+
+        while (segmentEnd - cursor > maxPageHeight) {
+          const idealCut = cursor + maxPageHeight
+          const candidates = atomRects.filter(
+            (a) => a.top >= cursor && a.bottom <= idealCut,
+          )
+          let cut = candidates.length
+            ? candidates[candidates.length - 1].bottom
+            : idealCut
+          if (cut <= cursor) cut = idealCut
+          boundaries.push(cut)
+          cursor = cut
         }
+        boundaries.push(segmentEnd)
       }
+
       return boundaries
     }
 
     const boundaries = buildPageBoundaries(
       canvas.height,
       naturalBreaksCanvasPx,
+      atoms,
       pageHeightCanvasPx,
     )
 
