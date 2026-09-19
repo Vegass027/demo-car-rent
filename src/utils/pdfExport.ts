@@ -95,18 +95,42 @@ export async function exportHtmlToPdf(html: string, filename: string): Promise<v
       .map((el) => (el.getBoundingClientRect().top - bodyTop) * scale)
       .filter((y) => y > 0 && y < canvas.height)
 
-    // Атомы — элементы, которые нельзя резать пополам (строки таблиц,
-    // абзацы, пункты списков, заголовки). Их границы в canvas px.
+    // Атомы — реальные строки текста на экране, независимо от того,
+    // в каком теге они лежат. getClientRects() возвращает точные
+    // прямоугольники каждой визуально отрисованной строки.
     interface Rect { top: number; bottom: number }
-    const atoms: Rect[] = Array.from(
-      doc.querySelectorAll<HTMLElement>('tr, p, li, h1, h2, h3, h4'),
-    ).map((el) => {
-      const r = el.getBoundingClientRect()
-      return {
-        top: (r.top - bodyTop) * scale,
-        bottom: (r.bottom - bodyTop) * scale,
+    const collectLineRects = (root: HTMLElement, _bodyTop: number, _scale: number): Rect[] => {
+      const rects: Rect[] = []
+      const walker = doc.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+        acceptNode: (node: Node) =>
+          node.textContent && node.textContent.trim().length > 0
+            ? NodeFilter.FILTER_ACCEPT
+            : NodeFilter.FILTER_REJECT,
+      })
+      let node: Node | null
+      while ((node = walker.nextNode())) {
+        const range = doc.createRange()
+        range.selectNodeContents(node)
+        for (const r of Array.from(range.getClientRects())) {
+          if (r.height === 0) continue
+          rects.push({
+            top: (r.top - bodyTop) * scale,
+            bottom: (r.bottom - bodyTop) * scale,
+          })
+        }
       }
-    })
+      // Картинки — тоже нельзя резать пополам
+      Array.from(root.querySelectorAll('img')).forEach((img) => {
+        const r = img.getBoundingClientRect()
+        rects.push({
+          top: (r.top - bodyTop) * scale,
+          bottom: (r.bottom - bodyTop) * scale,
+        })
+      })
+      return rects
+    }
+
+    const atoms: Rect[] = collectLineRects(doc.body, bodyTop, scale)
 
     const pageHeightCanvasPx = A4_HEIGHT_PX * scale
 
