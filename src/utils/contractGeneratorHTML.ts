@@ -173,77 +173,7 @@ ${body}
 </html>`
 }
 
-// Открывает HTML в полноэкранном iframe (внутри текущей страницы).
-// Без blob URL — URL страницы не меняется, в шапке печати ничего лишнего.
-// При печати всё остальное скрывается — в предпросмотре видно только документ.
-// Закрывается по ESC.
-export function openHtmlDocument(html: string): void {
-  const existing = document.getElementById('html-doc-overlay-root')
-  if (existing) existing.remove()
-  const existingStyles = document.getElementById('html-doc-print-styles')
-  if (existingStyles) existingStyles.remove()
-
-  const root = document.createElement('div')
-  root.id = 'html-doc-overlay-root'
-  root.style.cssText = `
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: white; z-index: 2147483647;
-  `
-
-  const iframe = document.createElement('iframe')
-  iframe.style.cssText = 'width: 100%; height: 100%; border: none; background: white;'
-  iframe.srcdoc = html
-
-  // При печати скрываем ВСЁ кроме overlay. Иначе браузер в предпросмотре
-  // показывает родительский UI вместе с документом (поверх и под).
-  const printStyles = document.createElement('style')
-  printStyles.id = 'html-doc-print-styles'
-  printStyles.textContent = `
-    @media print {
-      html, body { background: white !important; }
-      body > *:not(#html-doc-overlay-root) { display: none !important; }
-      #html-doc-overlay-root {
-        position: static !important;
-        width: 100% !important;
-        height: auto !important;
-      }
-      #html-doc-overlay-root > iframe {
-        width: 100% !important;
-        height: auto !important;
-        min-height: 100vh;
-      }
-    }
-  `
-  document.head.appendChild(printStyles)
-
-  const close = () => {
-    root.remove()
-    printStyles.remove()
-    document.removeEventListener('keydown', escHandler)
-  }
-  const escHandler = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') close()
-  }
-  document.addEventListener('keydown', escHandler)
-
-  iframe.addEventListener('load', () => {
-    try {
-      const innerDoc = iframe.contentDocument
-      if (innerDoc) {
-        innerDoc.addEventListener('keydown', (e: KeyboardEvent) => {
-          if (e.key === 'Escape') close()
-        })
-      }
-    } catch {
-      // cross-origin
-    }
-  })
-
-  root.appendChild(iframe)
-  document.body.appendChild(root)
-
-  setTimeout(() => iframe.focus(), 50)
-}
+// (openHtmlDocument удалена — больше не используется. PDF-путь через PDFShift.)
 
 // ============================================================
 // 1. АКТ ПРИЁМА-ПЕРЕДАЧИ ТРАНСПОРТНОГО СРЕДСТВА
