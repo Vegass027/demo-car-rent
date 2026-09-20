@@ -61,10 +61,19 @@ export default async function handler(
     }
 
     const pdfBuffer = await response.arrayBuffer()
-    const safeFilename = (filename || 'document.pdf').replace(/[^\wа-яА-ЯёЁ.\-]/g, '_')
+    const rawFilename = filename || 'document.pdf'
+
+    // HTTP-заголовки требуют только ASCII. Используем RFC 5987:
+    // filename — ASCII fallback для старых клиентов
+    // filename*=UTF-8''<encoded> — для современных клиентов с кириллицей
+    const asciiFilename = rawFilename.replace(/[^\x20-\x7E]/g, '_').replace(/"/g, '')
+    const utf8Encoded = encodeURIComponent(rawFilename)
 
     res.setHeader('Content-Type', 'application/pdf')
-    res.setHeader('Content-Disposition', `inline; filename="${safeFilename}"`)
+    res.setHeader(
+      'Content-Disposition',
+      `inline; filename="${asciiFilename}"; filename*=UTF-8''${utf8Encoded}`,
+    )
     res.setHeader('Cache-Control', 'no-store')
     return res.status(200).send(Buffer.from(pdfBuffer))
   } catch (err) {
