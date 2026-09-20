@@ -30,6 +30,12 @@ import { getClient, clientToContractData } from '@/api/clients'
 import { Loader } from '@/components/retroui/Loader'
 import type { CarStatus, ExpenseCategory, CarRecord, ContractClientData } from '@/types'
 
+// Определение мобильного устройства
+function isMobileDevice(): boolean {
+  if (typeof window === 'undefined') return false
+  return window.innerWidth < 768 || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+}
+
 export function CarDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -1461,69 +1467,83 @@ export function CarDetail() {
                             <span>{formatPeriod()}</span>
                           </div>
                           
-                          {/* Кнопки документов - отцентрированы на мобильных */}
+                          {/* Кнопки документов — отцентрированы на мобильных */}
                           {record.renterName && (
                             <div className="flex flex-col items-stretch gap-1.5 mt-2 pt-2 border-t border-border w-full">
-                              {/* Договор аренды */}
-                              <div className="flex items-center gap-2 w-full">
-                                <button
-                                  onClick={() => handleGenerateFullContractFromHistory(record)}
-                                  disabled={generatingDocs[`${record.id}-full-contract`]}
-                                  className="flex-1 min-w-0 flex items-center justify-center gap-1 px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded transition-colors disabled:opacity-50 truncate"
-                                  title="Скачать договор аренды (.docx)"
-                                >
-                                  <Download className="w-3 h-3 shrink-0" />
-                                  <span className="truncate">{generatingDocs[`${record.id}-full-contract`] ? 'Генерация...' : 'Договор аренды'}</span>
-                                </button>
-                                <button
-                                  onClick={() => handleViewFullContractHTML(record)}
-                                  className="flex items-center gap-1 px-2 py-1 text-xs text-blue-600/70 hover:bg-blue-50 rounded transition-colors shrink-0"
-                                  title="Открыть договор аренды для просмотра в браузере"
-                                >
-                                  <Eye className="w-3 h-3" />
-                                  Открыть
-                                </button>
-                              </div>
-                              {/* Акт приёма-передачи */}
-                              <div className="flex items-center gap-2 w-full">
-                                <button
-                                  onClick={() => handleGenerateContractFromHistory(record)}
-                                  disabled={generatingDocs[`${record.id}-contract`]}
-                                  className="flex-1 min-w-0 flex items-center justify-center gap-1 px-2 py-1 text-xs text-green-600 hover:bg-green-50 rounded transition-colors disabled:opacity-50 truncate"
-                                  title="Скачать акт приёма-передачи (.docx)"
-                                >
-                                  <Download className="w-3 h-3 shrink-0" />
-                                  <span className="truncate">{generatingDocs[`${record.id}-contract`] ? 'Генерация...' : 'Акт приёма-передачи'}</span>
-                                </button>
-                                <button
-                                  onClick={() => handleViewContractHTML(record)}
-                                  className="flex items-center gap-1 px-2 py-1 text-xs text-green-600/70 hover:bg-green-50 rounded transition-colors shrink-0"
-                                  title="Открыть акт приёма-передачи для просмотра в браузере"
-                                >
-                                  <Eye className="w-3 h-3" />
-                                  Открыть
-                                </button>
-                              </div>
-                              {/* Акт выполненных работ */}
-                              <div className="flex items-center gap-2 w-full">
-                                <button
-                                  onClick={() => handleGenerateServiceActFromHistory(record)}
-                                  disabled={generatingDocs[`${record.id}-service-act`]}
-                                  className="flex-1 min-w-0 flex items-center justify-center gap-1 px-2 py-1 text-xs text-purple-600 hover:bg-purple-50 rounded transition-colors disabled:opacity-50 truncate"
-                                  title="Скачать акт выполненных работ (.docx)"
-                                >
-                                  <Download className="w-3 h-3 shrink-0" />
-                                  <span className="truncate">{generatingDocs[`${record.id}-service-act`] ? 'Генерация...' : 'Акт выполненных работ'}</span>
-                                </button>
-                                <button
-                                  onClick={() => handleViewServiceActHTML(record)}
-                                  className="flex items-center gap-1 px-2 py-1 text-xs text-purple-600/70 hover:bg-purple-50 rounded transition-colors shrink-0"
-                                  title="Открыть акт выполненных работ для просмотра в браузере"
-                                >
-                                  <Eye className="w-3 h-3" />
-                                  Открыть
-                                </button>
-                              </div>
+                              {(() => {
+                                const mobile = isMobileDevice()
+                                const Spinner = (
+                                  <svg className="animate-spin h-3 w-3 shrink-0 inline-block" viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" opacity="0.25" />
+                                    <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                                  </svg>
+                                )
+                                const commonClass = 'flex-1 min-w-0 flex items-center justify-center gap-1 px-2 py-1 text-xs rounded transition-colors disabled:opacity-50 truncate'
+
+                                // 1. Договор аренды
+                                const rentalLoading = generatingDocs[`${record.id}-full-contract`]
+                                return (
+                                  <>
+                                    <button
+                                      onClick={() => mobile ? handleViewFullContractHTML(record) : handleGenerateFullContractFromHistory(record)}
+                                      disabled={rentalLoading}
+                                      className={`${commonClass} text-blue-600 hover:bg-blue-50`}
+                                      title={mobile ? 'Открыть PDF для печати' : 'Скачать договор аренды (.docx)'}
+                                    >
+                                      {rentalLoading ? Spinner : (mobile ? <Eye className="w-3 h-3 shrink-0" /> : <Download className="w-3 h-3 shrink-0" />)}
+                                      <span className="truncate">{rentalLoading ? 'Генерация…' : (mobile ? 'Открыть PDF для печати' : 'Скачать договор аренды')}</span>
+                                    </button>
+                                  </>
+                                )
+                              })()}
+                              {(() => {
+                                const mobile = isMobileDevice()
+                                const Spinner = (
+                                  <svg className="animate-spin h-3 w-3 shrink-0 inline-block" viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" opacity="0.25" />
+                                    <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                                  </svg>
+                                )
+                                const commonClass = 'flex-1 min-w-0 flex items-center justify-center gap-1 px-2 py-1 text-xs rounded transition-colors disabled:opacity-50 truncate'
+
+                                // 2. Акт приёма-передачи
+                                const actLoading = generatingDocs[`${record.id}-contract`]
+                                return (
+                                  <button
+                                    onClick={() => mobile ? handleViewContractHTML(record) : handleGenerateContractFromHistory(record)}
+                                    disabled={actLoading}
+                                    className={`${commonClass} text-green-600 hover:bg-green-50`}
+                                    title={mobile ? 'Открыть PDF для печати' : 'Скачать акт приёма-передачи (.docx)'}
+                                  >
+                                    {actLoading ? Spinner : (mobile ? <Eye className="w-3 h-3 shrink-0" /> : <Download className="w-3 h-3 shrink-0" />)}
+                                    <span className="truncate">{actLoading ? 'Генерация…' : (mobile ? 'Открыть PDF для печати' : 'Скачать акт приёма-передачи')}</span>
+                                  </button>
+                                )
+                              })()}
+                              {(() => {
+                                const mobile = isMobileDevice()
+                                const Spinner = (
+                                  <svg className="animate-spin h-3 w-3 shrink-0 inline-block" viewBox="0 0 24 24" fill="none">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" opacity="0.25" />
+                                    <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                                  </svg>
+                                )
+                                const commonClass = 'flex-1 min-w-0 flex items-center justify-center gap-1 px-2 py-1 text-xs rounded transition-colors disabled:opacity-50 truncate'
+
+                                // 3. Акт выполненных работ
+                                const serviceLoading = generatingDocs[`${record.id}-service-act`]
+                                return (
+                                  <button
+                                    onClick={() => mobile ? handleViewServiceActHTML(record) : handleGenerateServiceActFromHistory(record)}
+                                    disabled={serviceLoading}
+                                    className={`${commonClass} text-purple-600 hover:bg-purple-50`}
+                                    title={mobile ? 'Открыть PDF для печати' : 'Скачать акт выполненных работ (.docx)'}
+                                  >
+                                    {serviceLoading ? Spinner : (mobile ? <Eye className="w-3 h-3 shrink-0" /> : <Download className="w-3 h-3 shrink-0" />)}
+                                    <span className="truncate">{serviceLoading ? 'Генерация…' : (mobile ? 'Открыть PDF для печати' : 'Скачать акт выполненных работ')}</span>
+                                  </button>
+                                )
+                              })()}
                             </div>
                           )}
                          </div>

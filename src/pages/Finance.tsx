@@ -2664,7 +2664,19 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
             onClick={handleGenerateBuyoutContract}
             disabled={isGeneratingBuyout}
           >
-            {isGeneratingBuyout ? '⏳ Генерация...' : '📄 Печать договора выкупа'}
+            {isGeneratingBuyout ? (
+              <>
+                <svg className="animate-spin h-4 w-4 mr-2 inline-block" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" opacity="0.25" />
+                  <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+                Генерация PDF…
+              </>
+            ) : isMobileDevice() ? (
+              '📄 Открыть PDF для печати'
+            ) : (
+              '📄 Печать договора выкупа'
+            )}
           </Button>
         </div>
       ) : bookingDates && (
@@ -2677,9 +2689,21 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
             onClick={handleGenerateFullContract}
             disabled={isGeneratingContract || isGeneratingFullContract || isGeneratingServiceAct}
           >
-            {isGeneratingFullContract ? '⏳ Генерация...' : '📄 Печать договора аренды'}
+            {isGeneratingFullContract ? (
+              <>
+                <svg className="animate-spin h-4 w-4 mr-2 inline-block" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" opacity="0.25" />
+                  <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+                Генерация PDF…
+              </>
+            ) : isMobileDevice() ? (
+              '📄 Открыть PDF для печати'
+            ) : (
+              '📄 Печать договора аренды'
+            )}
           </Button>
-          
+
           <Button
             type="button"
             variant="outline"
@@ -2688,9 +2712,21 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
             onClick={handleGenerateContract}
             disabled={isGeneratingContract || isGeneratingFullContract || isGeneratingServiceAct}
           >
-            {isGeneratingContract ? '⏳ Генерация...' : '📋 Печать акта приёма-передачи'}
+            {isGeneratingContract ? (
+              <>
+                <svg className="animate-spin h-4 w-4 mr-2 inline-block" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" opacity="0.25" />
+                  <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+                Генерация PDF…
+              </>
+            ) : isMobileDevice() ? (
+              '📄 Открыть PDF для печати'
+            ) : (
+              '📋 Печать акта приёма-передачи'
+            )}
           </Button>
-          
+
           <Button
             type="button"
             variant="outline"
@@ -2699,7 +2735,19 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
             onClick={handleGenerateServiceAct}
             disabled={isGeneratingContract || isGeneratingFullContract || isGeneratingServiceAct}
           >
-            {isGeneratingServiceAct ? '⏳ Генерация...' : '📝 Печать акта выполненных работ'}
+            {isGeneratingServiceAct ? (
+              <>
+                <svg className="animate-spin h-4 w-4 mr-2 inline-block" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" opacity="0.25" />
+                  <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+                Генерация PDF…
+              </>
+            ) : isMobileDevice() ? (
+              '📄 Открыть PDF для печати'
+            ) : (
+              '📝 Печать акта выполненных работ'
+            )}
           </Button>
         </div>
       )}
@@ -3429,7 +3477,19 @@ function BuyoutContractCard({ contract, companySettings, cars, onOpenPayment }: 
           onClick={handleGenerate}
           disabled={isGenerating}
         >
-          {isGenerating ? '⏳ Генерация...' : '📄 Печать договора'}
+          {isGenerating ? (
+            <>
+              <svg className="animate-spin h-4 w-4 mr-2 inline-block" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" opacity="0.25" />
+                <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+              </svg>
+              Генерация PDF…
+            </>
+          ) : isMobileDevice() ? (
+            '📄 Открыть PDF для печати'
+          ) : (
+            '📄 Печать договора'
+          )}
         </Button>
         {!isClosed && (
           <Button
