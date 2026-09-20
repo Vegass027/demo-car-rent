@@ -200,11 +200,10 @@ export async function generateContractDocumentHTML(data: any): Promise<string> {
   // Загружаем схему автомобиля для встраивания
   const schemaBase64 = await loadCarSchemaAsBase64()
   const schemaImg = schemaBase64
-    ? `<p class="center"><img src="data:image/png;base64,${schemaBase64}" style="max-width:280px; width:100%; height:auto;" alt="Схема автомобиля" /></p>`
+    ? `<p class="center"><img src="data:image/png;base64,${schemaBase64}" style="max-width:500px; width:100%; height:auto;" alt="Схема автомобиля" /></p>`
     : `<p class="center"><i>[Схема автомобиля]</i></p>`
 
   const body = `
-<div class="compact-act">
 <p class="center">Приложение №1 к договору № ${esc(data.contractNumber)} от ${esc(fmtDateLong(data.contractDate))}</p>
 
 <h1>АКТ ПРИЁМА – ПЕРЕДАЧИ ТРАНСПОРТНОГО СРЕДСТВА</h1>
@@ -330,7 +329,6 @@ ${Array(3).fill('<p>____________________________________________________________
 <p>${esc(c.fullName)} /____________________/</p>
 <p><b>ПРИНЯЛ (Арендодатель):</b></p>
 <p>${esc(owner?.fullName || '________________________')} /____________________/</p>
-</div>
 `
 
   return wrapHtml(`Акт № ${data.contractNumber}`, body)
@@ -595,6 +593,7 @@ export function generateServiceActDocumentHTML(data: ServiceActHTMLData): string
   const totalWords = data.totalAmountWords || ''
 
   const body = `
+<div class="compact-act">
 <p class="center"><b>Акт № ${esc(data.actNumber)}</b></p>
 <p class="center">выполненных работ по договору аренды</p>
 
@@ -656,12 +655,11 @@ export function generateServiceActDocumentHTML(data: ServiceActHTMLData): string
 
 <p>Вышеперечисленные работы выполнены полностью и в срок. Заказчик претензий по объему, качеству и срокам выполнения работ претензий не имеет.</p>
 
-<div class="page-break"></div>
-
-<p>Исполнитель ______________________________________</p>
+<p style="margin-top:14px;">Исполнитель ______________________________________</p>
 <p style="font-size:9pt;"><i>(${esc(data.executor.fullName || '')})</i></p>
 <p>Заказчик ______________________________________</p>
 <p style="font-size:9pt;"><i>(${esc(data.customer.fullName || '')})</i></p>
+</div>
 `
 
   return wrapHtml(`Акт № ${data.actNumber}`, body)
