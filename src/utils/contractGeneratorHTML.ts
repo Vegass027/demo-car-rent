@@ -140,6 +140,11 @@ const CSS = `
   .empty { color: #999; }
   .no-break { page-break-inside: avoid; }
   .page-break { page-break-before: always; }
+  .compact-act p { margin: 3px 0; }
+  .compact-act table { margin: 6px 0; }
+  .compact-act td { padding: 2px 4px; font-size: 9pt; }
+  .compact-act h2 { margin: 8px 0 4px; }
+  .compact-act h3 { margin: 6px 0 2px; }
   @media print {
     /* Убираем поля страницы — тогда браузеру негде рисовать свой
        header/footer с URL (blob:https://...), и они просто не печатаются.
@@ -195,10 +200,11 @@ export async function generateContractDocumentHTML(data: any): Promise<string> {
   // Загружаем схему автомобиля для встраивания
   const schemaBase64 = await loadCarSchemaAsBase64()
   const schemaImg = schemaBase64
-    ? `<p class="center"><img src="data:image/png;base64,${schemaBase64}" style="max-width:500px; width:100%; height:auto;" alt="Схема автомобиля" /></p>`
+    ? `<p class="center"><img src="data:image/png;base64,${schemaBase64}" style="max-width:280px; width:100%; height:auto;" alt="Схема автомобиля" /></p>`
     : `<p class="center"><i>[Схема автомобиля]</i></p>`
 
   const body = `
+<div class="compact-act">
 <p class="center">Приложение №1 к договору № ${esc(data.contractNumber)} от ${esc(fmtDateLong(data.contractDate))}</p>
 
 <h1>АКТ ПРИЁМА – ПЕРЕДАЧИ ТРАНСПОРТНОГО СРЕДСТВА</h1>
@@ -236,7 +242,7 @@ export async function generateContractDocumentHTML(data: any): Promise<string> {
 ${schemaImg}
 
 <p><b>Примечания:</b></p>
-${Array(10).fill('<p>____________________________________________________________</p>').join('\n')}
+${Array(3).fill('<p>____________________________________________________________</p>').join('\n')}
 
 <table>
   <tr>
@@ -316,9 +322,7 @@ ${Array(10).fill('<p>___________________________________________________________
 <p>Место возврата автомобиля: ${esc(returnPlace)}</p>
 <p>Дата и время возврата автомобиля: ${esc(fmtDateShort(data.endDate))}, _____:_____</p>
 
-<div class="page-break"></div>
-
-<p><b>ПЕРЕДАЛ (Арендодатель):</b></p>
+<p style="margin-top:12px;"><b>ПЕРЕДАЛ (Арендодатель):</b></p>
 <p>${esc(owner?.fullName || '________________________')} /____________________/</p>
 <p><b>ПРИНЯЛ (Арендатор):</b></p>
 <p>${esc(c.fullName)} /____________________/</p>
@@ -326,6 +330,7 @@ ${Array(10).fill('<p>___________________________________________________________
 <p>${esc(c.fullName)} /____________________/</p>
 <p><b>ПРИНЯЛ (Арендодатель):</b></p>
 <p>${esc(owner?.fullName || '________________________')} /____________________/</p>
+</div>
 `
 
   return wrapHtml(`Акт № ${data.contractNumber}`, body)
