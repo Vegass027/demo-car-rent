@@ -24,6 +24,7 @@ import { calcProfit } from '@/utils/calc'
 import { generateContractDocument, generateServiceActDocument, generateBuyoutContractDocument, generateSimpleRentalContractDocument, generateContractNumber } from '@/utils/contractGenerator'
 import { generateContractDocumentHTML, generateServiceActDocumentHTML, generateBuyoutContractDocumentHTML, generateSimpleRentalContractDocumentHTML } from '@/utils/contractGeneratorHTML'
 import { exportHtmlToPdf } from '@/utils/pdfExport'
+import { useAppStore } from '@/store/useAppStore'
 
 // Кнопка генерации документа: на мобильном — "Открыть PDF для печати",
 // на десктопе — конкретное название. Пока грузится — спиннер.
@@ -142,6 +143,7 @@ export function RecordModal({
   const [isGeneratingServiceAct, setIsGeneratingServiceAct] = useState(false)
   const [isGeneratingBuyout, setIsGeneratingBuyout] = useState(false)
   const [isGeneratingSimpleRental, setIsGeneratingSimpleRental] = useState(false)
+  const setGeneratingDocument = useAppStore((s) => s.setGeneratingDocument)
 
   // Поля для режима выкупа
   const [buyoutStartDate, setBuyoutStartDate] = useState('')
@@ -438,6 +440,7 @@ export function RecordModal({
     }
     
     setIsGeneratingContract(true)
+    setGeneratingDocument(true, 'Генерация PDF…')
     try {
       const renterName = watch('renterName') || ''
 
@@ -501,6 +504,7 @@ export function RecordModal({
       alert('Ошибка при генерации акта: ' + (error as Error).message)
     } finally {
       setIsGeneratingContract(false)
+      setGeneratingDocument(false)
     }
   }
 
@@ -524,6 +528,7 @@ export function RecordModal({
     }
     
     setIsGeneratingServiceAct(true)
+    setGeneratingDocument(true, 'Генерация PDF…')
     try {
       const renterName = watch('renterName') || ''
 
@@ -572,6 +577,7 @@ export function RecordModal({
       alert('Ошибка при генерации акта')
     } finally {
       setIsGeneratingServiceAct(false)
+      setGeneratingDocument(false)
     }
   }
 
@@ -593,6 +599,7 @@ export function RecordModal({
     }
 
     setIsGeneratingBuyout(true)
+    setGeneratingDocument(true, 'Генерация PDF…')
     try {
       const effectiveDate = buyoutStartDate || new Date().toISOString().split('T')[0]
 
@@ -656,6 +663,7 @@ export function RecordModal({
       alert('Ошибка при генерации договора выкупа')
     } finally {
       setIsGeneratingBuyout(false)
+      setGeneratingDocument(false)
     }
   }
 
@@ -679,6 +687,7 @@ export function RecordModal({
     }
     
     setIsGeneratingSimpleRental(true)
+    setGeneratingDocument(true, 'Генерация PDF…')
     try {
       const data = {
         // Данные авто
@@ -731,6 +740,7 @@ export function RecordModal({
       alert('Ошибка при генерации договора')
     } finally {
       setIsGeneratingSimpleRental(false)
+      setGeneratingDocument(false)
     }
   }
 

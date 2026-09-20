@@ -14,6 +14,7 @@ import { Finance } from '@/pages/Finance'
 import { Offline } from '@/pages/Offline'
 import { AppLayout } from '@/components/features/AppLayout'
 import { Toaster } from '@/components/retroui/Sonner'
+import { GeneratingDocumentOverlay } from '@/components/features/GeneratingDocumentOverlay'
 
 function AppRoutes() {
   const { data: userFromQuery, isLoading } = useCurrentUser()
@@ -83,6 +84,7 @@ export function App() {
         <AppRoutes />
       </BrowserRouter>
       <Toaster position="top-right" />
+      <GeneratingDocumentOverlay />
     </QueryClientProvider>
   )
 }

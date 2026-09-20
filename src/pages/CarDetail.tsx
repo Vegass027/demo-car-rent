@@ -64,7 +64,7 @@ export function CarDetail() {
   // Состояние для отображения галочки сохранения даты покупки
   const [showPurchaseDateSaved, setShowPurchaseDateSaved] = useState(false)
   
-  const { selectedMonth, setSelectedMonth } = useAppStore()
+  const { selectedMonth, setSelectedMonth, setGeneratingDocument } = useAppStore()
   const [year, month] = selectedMonth.split('-').map(Number)
   
   // Запросы
@@ -395,7 +395,8 @@ export function CarDetail() {
     
     const docKey = `${record.id}-contract`
     setGeneratingDocs(prev => ({ ...prev, [docKey]: true }))
-    
+    setGeneratingDocument(true, 'Генерация документа…')
+
     try {
       // Загружаем данные клиента
       const clientData = await getClientDataFromRecord(record)
@@ -437,6 +438,7 @@ export function CarDetail() {
       alert('Ошибка при генерации акта')
     } finally {
       setGeneratingDocs(prev => ({ ...prev, [docKey]: false }))
+      setGeneratingDocument(false)
     }
   }
 
@@ -498,6 +500,7 @@ export function CarDetail() {
       alert('Ошибка при генерации договора')
     } finally {
       setGeneratingDocs(prev => ({ ...prev, [docKey]: false }))
+      setGeneratingDocument(false)
     }
   }
 
@@ -549,6 +552,7 @@ export function CarDetail() {
       alert('Ошибка при генерации акта')
     } finally {
       setGeneratingDocs(prev => ({ ...prev, [docKey]: false }))
+      setGeneratingDocument(false)
     }
   }
 
@@ -578,6 +582,7 @@ export function CarDetail() {
       alert('Нет данных арендатора')
       return
     }
+    setGeneratingDocument(true, 'Генерация PDF…')
     try {
       const clientData = buildClientFromRecord(record)
       const days = record.startDate && record.endDate
@@ -614,6 +619,8 @@ export function CarDetail() {
     } catch (error) {
       console.error('Ошибка генерации HTML:', error)
       alert('Ошибка при генерации документа: ' + (error as Error).message)
+    } finally {
+      setGeneratingDocument(false)
     }
   }
 
@@ -627,6 +634,7 @@ export function CarDetail() {
       alert('Нет данных арендатора')
       return
     }
+    setGeneratingDocument(true, 'Генерация PDF…')
     try {
       const clientData = buildClientFromRecord(record)
       const days = record.startDate && record.endDate
@@ -664,6 +672,8 @@ export function CarDetail() {
     } catch (error) {
       console.error('Ошибка генерации HTML:', error)
       alert('Ошибка при генерации документа: ' + (error as Error).message)
+    } finally {
+      setGeneratingDocument(false)
     }
   }
 
@@ -673,6 +683,7 @@ export function CarDetail() {
       alert('Машина не загружена')
       return
     }
+    setGeneratingDocument(true, 'Генерация PDF…')
     try {
       const html = generateServiceActDocumentHTML({
         actNumber: generateContractNumber().replace('ККР-', 'А-'),
@@ -698,6 +709,8 @@ export function CarDetail() {
     } catch (error) {
       console.error('Ошибка генерации HTML:', error)
       alert('Ошибка при генерации документа: ' + (error as Error).message)
+    } finally {
+      setGeneratingDocument(false)
     }
   }
 

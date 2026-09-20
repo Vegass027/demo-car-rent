@@ -11,6 +11,10 @@ interface AppStore {
   selectedMonth: string
   selectedCarId: string | null
 
+  // Глобальный loading для генерации документов (PDF/DOCX)
+  isGeneratingDocument: boolean
+  generatingDocumentLabel: string
+
   // Действия
   setUser: (user: User | null) => void
   setReady: (ready: boolean) => void
@@ -19,6 +23,7 @@ interface AppStore {
   closeLoginModal: () => void
   setSelectedMonth: (month: string) => void
   setSelectedCarId: (id: string | null) => void
+  setGeneratingDocument: (loading: boolean, label?: string) => void
 }
 
 export const useAppStore = create<AppStore>((set) => ({
@@ -27,6 +32,8 @@ export const useAppStore = create<AppStore>((set) => ({
   isLoginModalOpen: false,
   selectedMonth: new Date().toISOString().slice(0, 7),
   selectedCarId: null,
+  isGeneratingDocument: false,
+  generatingDocumentLabel: '',
 
   setUser: (user) => set({ user }),
   setReady: (ready) => set({ isReady: ready }),
@@ -35,4 +42,6 @@ export const useAppStore = create<AppStore>((set) => ({
   closeLoginModal: () => set({ isLoginModalOpen: false }),
   setSelectedMonth: (month) => set({ selectedMonth: month }),
   setSelectedCarId: (id) => set({ selectedCarId: id }),
+  setGeneratingDocument: (loading, label) =>
+    set({ isGeneratingDocument: loading, generatingDocumentLabel: label || '' }),
 }))

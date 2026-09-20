@@ -2246,6 +2246,7 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
   const [isGeneratingContract, setIsGeneratingContract] = useState(false)
   const [isGeneratingFullContract, setIsGeneratingFullContract] = useState(false)
   const [isGeneratingServiceAct, setIsGeneratingServiceAct] = useState(false)
+  const setGeneratingDocument = useAppStore((s) => s.setGeneratingDocument)
   const [isGeneratingBuyout, setIsGeneratingBuyout] = useState(false)
   
   const isBuyout = record.recordType === 'buyout'
@@ -2298,6 +2299,7 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
     }
     
     setIsGeneratingContract(true)
+    setGeneratingDocument(true, 'Генерация PDF…')
     try {
       const data = {
         // Данные авто
@@ -2353,6 +2355,7 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
       alert('Ошибка при генерации акта')
     } finally {
       setIsGeneratingContract(false)
+      setGeneratingDocument(false)
     }
   }
   
@@ -2379,6 +2382,7 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
     }
     
     setIsGeneratingFullContract(true)
+    setGeneratingDocument(true, 'Генерация PDF…')
     try {
       const data = {
         carBrand: car.brand || '',
@@ -2431,6 +2435,7 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
       alert('Ошибка при генерации договора')
     } finally {
       setIsGeneratingFullContract(false)
+      setGeneratingDocument(false)
     }
   }
   
@@ -2452,6 +2457,7 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
     }
     
     setIsGeneratingServiceAct(true)
+    setGeneratingDocument(true, 'Генерация PDF…')
     try {
       const data = {
         // Номер акта
@@ -2496,6 +2502,7 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
       alert('Ошибка при генерации акта')
     } finally {
       setIsGeneratingServiceAct(false)
+      setGeneratingDocument(false)
     }
   }
   
@@ -2522,6 +2529,7 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
     }
     
     setIsGeneratingBuyout(true)
+    setGeneratingDocument(true, 'Генерация PDF…')
     try {
       const bd = record.buyoutData
       const data = {
@@ -2580,6 +2588,7 @@ function ClientHistoryRow({ record, client, companySettings, cars }: ClientHisto
       alert('Ошибка при генерации договора выкупа')
     } finally {
       setIsGeneratingBuyout(false)
+      setGeneratingDocument(false)
     }
   }
   
@@ -2959,6 +2968,7 @@ interface BuyoutContractCardProps {
 
 function BuyoutContractCard({ contract, companySettings, cars, onOpenPayment }: BuyoutContractCardProps) {
   const [isGenerating, setIsGenerating] = useState(false)
+  const setGeneratingDocument = useAppStore((s) => s.setGeneratingDocument)
   const [showPayments, setShowPayments] = useState(false)
   const [isEditingDates, setIsEditingDates] = useState(false)
   const [editStartDate, setEditStartDate] = useState('')
@@ -3016,6 +3026,7 @@ function BuyoutContractCard({ contract, companySettings, cars, onOpenPayment }: 
     }
     
     setIsGenerating(true)
+    setGeneratingDocument(true, 'Генерация PDF…')
     try {
       const clientData = client
         ? {
@@ -3080,6 +3091,7 @@ function BuyoutContractCard({ contract, companySettings, cars, onOpenPayment }: 
       alert('Ошибка генерации договора')
     } finally {
       setIsGenerating(false)
+      setGeneratingDocument(false)
     }
   }
   
