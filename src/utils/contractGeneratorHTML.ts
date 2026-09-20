@@ -484,9 +484,7 @@ export function generateSimpleRentalContractDocumentHTML(
 <p>1. Приложение №1 дополнительное соглашение с условиями оплаты.</p>
 <p>2. Приложение № 2 Акт приема передачи</p>
 
-<div class="page-break"></div>
-
-<p class="center"><b>7. ПОДПИСИ СТОРОН</b></p>
+<p class="center" style="margin-top:8px;"><b>7. ПОДПИСИ СТОРОН</b></p>
 <p class="center"><b>Арендодатель:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Арендатор:</b></p>
 <p class="center">___________________/_____________________/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;___________________/____________________________/</p>
 <p class="center" style="font-size: 9pt;">(подпись)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(фамилия, инициалы)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(подпись)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(фамилия, инициалы)</p>
